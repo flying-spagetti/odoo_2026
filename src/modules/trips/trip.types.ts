@@ -74,3 +74,39 @@ export type TripActionFailure = {
 };
 
 export type TripActionResult<T> = TripActionSuccess<T> | TripActionFailure;
+
+export type TripResourceSummary = {
+  id: string;
+  name: string;
+  status: VehicleStatus | DriverStatus;
+  detailLabel: string;
+};
+
+export type TripBoardItem = {
+  id: string;
+  tripCode: string;
+  source: string;
+  destination: string;
+  status: TripStatus;
+  cargoWeightKg: number;
+  plannedDistanceKm: number;
+  vehicle: TripResourceSummary;
+  driver: TripResourceSummary;
+  boardNote: string;
+  updatedAt: string;
+};
+
+export type TripDetailView = {
+  id: string;
+  tripCode: string;
+  source: string;
+  destination: string;
+  status: TripStatus;
+  cargoWeightKg: number;
+  plannedDistanceKm: number;
+  vehicle: TripResourceSummary & { maxLoadKg: number };
+  driver: TripResourceSummary & { licenseExpiryDate: string };
+  dispatchedAt: string | null;
+  completedAt: string | null;
+  cancelledAt: string | null;
+};
