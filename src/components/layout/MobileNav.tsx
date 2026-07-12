@@ -31,10 +31,10 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
       <Portal>
         <Drawer.Backdrop />
         <Drawer.Positioner>
-          <Drawer.Content>
-            <Drawer.Header borderBottomWidth="1px" borderColor="border.muted">
+          <Drawer.Content bg="gray.950" color="gray.100">
+            <Drawer.Header borderBottomWidth="1px" borderColor="gray.800">
               <Drawer.Title>
-                <Heading size="md" color="blue.600">
+                <Heading size="md" color="gray.100">
                   TransitOps
                 </Heading>
               </Drawer.Title>
@@ -60,8 +60,10 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
                         borderRadius="md"
                         fontSize="sm"
                         fontWeight={isActive ? "semibold" : "medium"}
-                        color={isActive ? "blue.700" : "fg.muted"}
-                        bg={isActive ? "blue.50" : "transparent"}
+                        color={isActive ? "orange.300" : "gray.400"}
+                        bg={isActive ? "gray.900" : "transparent"}
+                        borderWidth={isActive ? "1px" : "0"}
+                        borderColor={isActive ? "orange.500" : "transparent"}
                       >
                         <Icon as={item.icon} boxSize="4" />
                         <Text>{item.label}</Text>
@@ -71,8 +73,8 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
                 })}
               </VStack>
             </Drawer.Body>
-            <Box px="5" py="4" borderTopWidth="1px" borderColor="border.muted">
-              <Text fontSize="xs" color="fg.subtle">
+            <Box px="5" py="4" borderTopWidth="1px" borderColor="gray.800">
+              <Text fontSize="xs" color="gray.500">
                 Transport Operations
               </Text>
             </Box>

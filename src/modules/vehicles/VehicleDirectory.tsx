@@ -2,191 +2,241 @@
 
 import {
   Button,
+  Card,
   Flex,
-  FormatNumber,
   HStack,
-  IconButton,
   Input,
-  InputGroup,
   NativeSelect,
+  Table,
   Text,
 } from "@chakra-ui/react";
 import { useMemo, useState } from "react";
-import { LuEllipsis, LuPlus, LuSearch } from "react-icons/lu";
-import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
+import { LuPlus } from "react-icons/lu";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { LoadingState } from "@/components/shared/LoadingState";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { MOCK_VEHICLES } from "@/lib/mock-data/vehicles";
+import { formatIndianCurrency, formatOdometer } from "@/lib/utils/format";
 import { VEHICLE_STATUSES } from "@/types/status";
-import type { Vehicle, VehicleType } from "@/types/vehicle";
-import { VEHICLE_TYPE_LABELS } from "@/types/vehicle";
+import type { Vehicle } from "@/types/vehicle";
+import { VEHICLE_REGISTRY_TYPE_FILTERS } from "@/types/vehicle";
 
 interface VehicleDirectoryProps {
   vehicles?: Vehicle[];
   isLoading?: boolean;
 }
 
-const VEHICLE_TYPES = Object.keys(VEHICLE_TYPE_LABELS) as VehicleType[];
-
 export function VehicleDirectory({
   vehicles = MOCK_VEHICLES,
   isLoading = false,
 }: VehicleDirectoryProps) {
-  const [search, setSearch] = useState("");
+  const [registrationSearch, setRegistrationSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [typeFilter, setTypeFilter] = useState("ALL");
+  const [typeFilter, setTypeFilter] = useState("All");
 
   const filteredVehicles = useMemo(() => {
-    const query = search.trim().toLowerCase();
+    const query = registrationSearch.trim().toLowerCase();
 
     return vehicles.filter((vehicle) => {
-      const matchesSearch =
-        !query ||
-        vehicle.registrationNumber.toLowerCase().includes(query) ||
-        vehicle.make.toLowerCase().includes(query) ||
-        vehicle.model.toLowerCase().includes(query);
+      const matchesRegistration =
+        !query || vehicle.registrationNumber.toLowerCase().includes(query);
 
       const matchesStatus =
         statusFilter === "ALL" || vehicle.status === statusFilter;
 
-      const matchesType = typeFilter === "ALL" || vehicle.type === typeFilter;
+      const matchesType =
+        typeFilter === "All" || vehicle.typeLabel === typeFilter;
 
-      return matchesSearch && matchesStatus && matchesType;
+      return matchesRegistration && matchesStatus && matchesType;
     });
-  }, [vehicles, search, statusFilter, typeFilter]);
-
-  const columns: DataTableColumn<Vehicle>[] = [
-    {
-      key: "registration",
-      header: "Registration Number",
-      render: (vehicle) => (
-        <Text fontWeight="medium" fontSize="sm">
-          {vehicle.registrationNumber}
-        </Text>
-      ),
-    },
-    {
-      key: "vehicle",
-      header: "Vehicle",
-      render: (vehicle) => (
-        <Text fontSize="sm">
-          {vehicle.make} {vehicle.model}
-        </Text>
-      ),
-    },
-    {
-      key: "type",
-      header: "Type",
-      hideBelow: "sm",
-      render: (vehicle) => (
-        <Text fontSize="sm">{VEHICLE_TYPE_LABELS[vehicle.type]}</Text>
-      ),
-    },
-    {
-      key: "capacity",
-      header: "Capacity",
-      hideBelow: "md",
-      render: (vehicle) => (
-        <Text fontSize="sm">
-          <FormatNumber value={vehicle.capacityKg} /> kg
-        </Text>
-      ),
-    },
-    {
-      key: "odometer",
-      header: "Odometer",
-      hideBelow: "md",
-      render: (vehicle) => (
-        <Text fontSize="sm">
-          <FormatNumber value={vehicle.odometerKm} /> km
-        </Text>
-      ),
-    },
-    {
-      key: "status",
-      header: "Status",
-      render: (vehicle) => <StatusBadge status={vehicle.status} />,
-    },
-    {
-      key: "actions",
-      header: "Actions",
-      render: () => (
-        <IconButton
-          aria-label="Vehicle actions"
-          variant="ghost"
-          size="xs"
-        >
-          <LuEllipsis />
-        </IconButton>
-      ),
-    },
-  ];
+  }, [vehicles, registrationSearch, statusFilter, typeFilter]);
 
   return (
-    <Flex direction="column" gap="4">
+    <Flex direction="column" gap="5">
       <Flex
-        direction={{ base: "column", md: "row" }}
+        direction={{ base: "column", lg: "row" }}
         gap="3"
-        align={{ base: "stretch", md: "center" }}
+        align={{ base: "stretch", lg: "center" }}
         justify="space-between"
       >
         <HStack gap="3" flex="1" flexWrap="wrap">
-          <InputGroup
-            maxW={{ base: "full", md: "xs" }}
-            startElement={<LuSearch />}
-          >
-            <Input
-              placeholder="Search vehicles..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              size="sm"
-            />
-          </InputGroup>
-          <NativeSelect.Root size="sm" width={{ base: "full", sm: "160px" }}>
-            <NativeSelect.Field
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              aria-label="Filter by status"
-            >
-              <option value="ALL">All statuses</option>
-              {VEHICLE_STATUSES.map((status) => (
-                <option key={status} value={status}>
-                  {status.replace(/_/g, " ")}
-                </option>
-              ))}
-            </NativeSelect.Field>
-            <NativeSelect.Indicator />
-          </NativeSelect.Root>
-          <NativeSelect.Root size="sm" width={{ base: "full", sm: "160px" }}>
+          <NativeSelect.Root size="sm" width={{ base: "full", sm: "150px" }}>
             <NativeSelect.Field
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
+              onChange={(event) => setTypeFilter(event.target.value)}
               aria-label="Filter by vehicle type"
+              bg="gray.800"
+              borderColor="gray.700"
+              color="gray.100"
             >
-              <option value="ALL">All types</option>
-              {VEHICLE_TYPES.map((type) => (
+              {VEHICLE_REGISTRY_TYPE_FILTERS.map((type) => (
                 <option key={type} value={type}>
-                  {VEHICLE_TYPE_LABELS[type]}
+                  Type: {type}
                 </option>
               ))}
             </NativeSelect.Field>
-            <NativeSelect.Indicator />
+            <NativeSelect.Indicator color="gray.400" />
           </NativeSelect.Root>
+
+          <NativeSelect.Root size="sm" width={{ base: "full", sm: "150px" }}>
+            <NativeSelect.Field
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+              aria-label="Filter by status"
+              bg="gray.800"
+              borderColor="gray.700"
+              color="gray.100"
+            >
+              <option value="ALL">Status: All</option>
+              {VEHICLE_STATUSES.map((status) => (
+                <option key={status} value={status}>
+                  Status: {status.replace(/_/g, " ")}
+                </option>
+              ))}
+            </NativeSelect.Field>
+            <NativeSelect.Indicator color="gray.400" />
+          </NativeSelect.Root>
+
+          <Input
+            placeholder="Search reg. no..."
+            value={registrationSearch}
+            onChange={(event) => setRegistrationSearch(event.target.value)}
+            size="sm"
+            maxW={{ base: "full", md: "220px" }}
+            bg="gray.800"
+            borderColor="gray.700"
+            color="gray.100"
+            _placeholder={{ color: "gray.500" }}
+          />
         </HStack>
-        <Button size="sm" colorPalette="blue" flexShrink={0}>
+
+        <Button
+          size="sm"
+          colorPalette="orange"
+          flexShrink={0}
+          alignSelf={{ base: "stretch", lg: "auto" }}
+        >
           <LuPlus />
-          Register Vehicle
+          Add Vehicle
         </Button>
       </Flex>
 
-      <DataTable
-        columns={columns}
-        data={filteredVehicles}
-        isLoading={isLoading}
-        loadingMessage="Loading vehicles..."
-        emptyTitle="No vehicles found"
-        emptyDescription="Try adjusting your search or filters, or register a new vehicle."
-        getRowKey={(vehicle) => vehicle.id}
-      />
+      <Card.Root
+        variant="outline"
+        bg="gray.900"
+        borderColor="gray.700"
+        overflow="hidden"
+      >
+        <Card.Body p="0">
+          {isLoading ? (
+            <LoadingState message="Loading vehicles..." />
+          ) : filteredVehicles.length === 0 ? (
+            <EmptyState
+              title="No vehicles found"
+              description="Try adjusting your filters or add a new vehicle to the registry."
+            />
+          ) : (
+            <Table.ScrollArea>
+              <Table.Root size="sm" variant="line">
+                <Table.Header>
+                  <Table.Row borderColor="gray.700">
+                    <Table.ColumnHeader color="gray.400" fontSize="xs" letterSpacing="wider">
+                      REG. NO. (UNIQUE)
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader
+                      color="gray.400"
+                      fontSize="xs"
+                      letterSpacing="wider"
+                      display={{ base: "none", sm: "table-cell" }}
+                    >
+                      NAME/MODEL
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader
+                      color="gray.400"
+                      fontSize="xs"
+                      letterSpacing="wider"
+                      display={{ base: "none", md: "table-cell" }}
+                    >
+                      TYPE
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader
+                      color="gray.400"
+                      fontSize="xs"
+                      letterSpacing="wider"
+                      display={{ base: "none", md: "table-cell" }}
+                    >
+                      CAPACITY
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader
+                      color="gray.400"
+                      fontSize="xs"
+                      letterSpacing="wider"
+                      display={{ base: "none", lg: "table-cell" }}
+                    >
+                      ODOMETER
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader
+                      color="gray.400"
+                      fontSize="xs"
+                      letterSpacing="wider"
+                      display={{ base: "none", lg: "table-cell" }}
+                    >
+                      ACQ. COST
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader color="gray.400" fontSize="xs" letterSpacing="wider">
+                      STATUS
+                    </Table.ColumnHeader>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {filteredVehicles.map((vehicle) => (
+                    <Table.Row key={vehicle.id} borderColor="gray.800">
+                      <Table.Cell>
+                        <Text fontSize="sm" fontWeight="medium" color="gray.100" fontFamily="mono">
+                          {vehicle.registrationNumber}
+                        </Text>
+                      </Table.Cell>
+                      <Table.Cell display={{ base: "none", sm: "table-cell" }}>
+                        <Text fontSize="sm" color="gray.200">
+                          {vehicle.name}
+                        </Text>
+                      </Table.Cell>
+                      <Table.Cell display={{ base: "none", md: "table-cell" }}>
+                        <Text fontSize="sm" color="gray.300">
+                          {vehicle.typeLabel}
+                        </Text>
+                      </Table.Cell>
+                      <Table.Cell display={{ base: "none", md: "table-cell" }}>
+                        <Text fontSize="sm" color="gray.300">
+                          {vehicle.capacityLabel}
+                        </Text>
+                      </Table.Cell>
+                      <Table.Cell display={{ base: "none", lg: "table-cell" }}>
+                        <Text fontSize="sm" color="gray.300">
+                          {formatOdometer(vehicle.odometerKm)}
+                        </Text>
+                      </Table.Cell>
+                      <Table.Cell display={{ base: "none", lg: "table-cell" }}>
+                        <Text fontSize="sm" color="gray.300">
+                          {formatIndianCurrency(vehicle.acquisitionCost)}
+                        </Text>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <StatusBadge status={vehicle.status} />
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Root>
+            </Table.ScrollArea>
+          )}
+        </Card.Body>
+      </Card.Root>
+
+      <Text fontSize="sm" color="orange.400">
+        Rule: Registration No. must be unique · Retired/In Shop vehicles are hidden
+        from Trip Dispatcher
+      </Text>
     </Flex>
   );
 }
