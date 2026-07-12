@@ -123,7 +123,11 @@ export function AnalyticsContent({
                       borderRadius: "8px",
                       color: "var(--chakra-colors-gray-100)",
                     }}
-                    formatter={(value: number) => [formatIndianCurrency(value), "Revenue"]}
+                    formatter={(value) => {
+                      const amount =
+                        typeof value === "number" ? value : Number(value ?? 0);
+                      return [formatIndianCurrency(amount), "Revenue"];
+                    }}
                   />
                   <Bar
                     dataKey="revenue"
