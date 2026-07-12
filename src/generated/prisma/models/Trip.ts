@@ -716,10 +716,6 @@ export type EnumTripStatusFieldUpdateOperationsInput = {
   set?: $Enums.TripStatus
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type TripCreateNestedOneWithoutFuelLogsInput = {
   create?: Prisma.XOR<Prisma.TripCreateWithoutFuelLogsInput, Prisma.TripUncheckedCreateWithoutFuelLogsInput>
   connectOrCreate?: Prisma.TripCreateOrConnectWithoutFuelLogsInput

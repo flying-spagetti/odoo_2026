@@ -7,7 +7,8 @@ import type {
 export const MOCK_EXPENSE_SUMMARY: ExpenseSummary = {
   totalFuelCost: 284500,
   totalMaintenanceCost: 156200,
-  totalOperationalCost: 478900,
+  totalOtherCost:74000,
+  totalOperationalCost: 514700,
 };
 
 export const MOCK_FUEL_LOGS: FuelLog[] = [

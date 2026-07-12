@@ -1,20 +1,16 @@
 import "dotenv/config";
 
-import { hashPassword } from "@better-auth/utils/password";
 import {
   DriverStatus,
   ExpenseType,
   MaintenanceStatus,
   PrismaClient,
-  Role,
   TripStatus,
   VehicleStatus,
   VehicleType,
 } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
-
-const SEED_PASSWORD = "TransitOps123!";
 
 const SEED_TRIP_ID = "seed-trip-draft";
 const SEED_MAINTENANCE_ID = "seed-maint-truck09";
@@ -31,68 +27,8 @@ function createSeedClient(): PrismaClient {
 
 async function main() {
   const prisma = createSeedClient();
-  const passwordHash = await hashPassword(SEED_PASSWORD);
 
   try {
-    const users = await Promise.all([
-      prisma.user.upsert({
-        where: { email: "fleet.manager@transitops.local" },
-        update: {
-          name: "Fleet Manager",
-          passwordHash,
-          role: Role.FLEET_MANAGER,
-        },
-        create: {
-          name: "Fleet Manager",
-          email: "fleet.manager@transitops.local",
-          passwordHash,
-          role: Role.FLEET_MANAGER,
-        },
-      }),
-      prisma.user.upsert({
-        where: { email: "dispatcher@transitops.local" },
-        update: {
-          name: "Dispatcher",
-          passwordHash,
-          role: Role.DISPATCHER,
-        },
-        create: {
-          name: "Dispatcher",
-          email: "dispatcher@transitops.local",
-          passwordHash,
-          role: Role.DISPATCHER,
-        },
-      }),
-      prisma.user.upsert({
-        where: { email: "safety.officer@transitops.local" },
-        update: {
-          name: "Safety Officer",
-          passwordHash,
-          role: Role.SAFETY_OFFICER,
-        },
-        create: {
-          name: "Safety Officer",
-          email: "safety.officer@transitops.local",
-          passwordHash,
-          role: Role.SAFETY_OFFICER,
-        },
-      }),
-      prisma.user.upsert({
-        where: { email: "financial.analyst@transitops.local" },
-        update: {
-          name: "Financial Analyst",
-          passwordHash,
-          role: Role.FINANCIAL_ANALYST,
-        },
-        create: {
-          name: "Financial Analyst",
-          email: "financial.analyst@transitops.local",
-          passwordHash,
-          role: Role.FINANCIAL_ANALYST,
-        },
-      }),
-    ]);
-
     const van05 = await prisma.vehicle.upsert({
       where: { registrationNumber: "AP31TV5005" },
       update: {
@@ -361,8 +297,8 @@ async function main() {
       },
     });
 
-    console.log(`Seeded ${users.length} users, 4 vehicles, 4 drivers, and operational records.`);
-    console.log(`Demo login password for all seeded users: ${SEED_PASSWORD}`);
+    console.log("Seeded 4 vehicles, 4 drivers, and operational records.");
+    console.log("Run `npm run db:seed-auth` to provision Better Auth demo accounts.");
   } finally {
     await prisma.$disconnect();
   }
