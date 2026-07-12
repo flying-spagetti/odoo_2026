@@ -1,0 +1,58 @@
+import type { Driver } from "@/types/driver";
+
+export const MOCK_DRIVERS: Driver[] = [
+  {
+    id: "d1",
+    name: "Ravi Kumar",
+    licenceNumber: "DL-0420190012345",
+    licenceCategory: "HMV",
+    licenceExpiry: "2027-03-15",
+    safetyScore: 92,
+    status: "ON_TRIP",
+  },
+  {
+    id: "d2",
+    name: "Suresh Patel",
+    licenceNumber: "GJ-0320180098765",
+    licenceCategory: "HMV",
+    licenceExpiry: "2026-11-20",
+    safetyScore: 88,
+    status: "AVAILABLE",
+  },
+  {
+    id: "d3",
+    name: "Anil Sharma",
+    licenceNumber: "RJ-0120170045678",
+    licenceCategory: "LMV",
+    licenceExpiry: "2025-06-01",
+    safetyScore: 75,
+    status: "AVAILABLE",
+  },
+  {
+    id: "d4",
+    name: "Mohammed Ali",
+    licenceNumber: "KA-0520200032109",
+    licenceCategory: "HMV",
+    licenceExpiry: "2028-01-10",
+    safetyScore: 95,
+    status: "OFF_DUTY",
+  },
+  {
+    id: "d5",
+    name: "Vikram Singh",
+    licenceNumber: "UP-1620190078901",
+    licenceCategory: "HMV",
+    licenceExpiry: "2024-12-31",
+    safetyScore: 60,
+    status: "SUSPENDED",
+  },
+  {
+    id: "d6",
+    name: "Pradeep Nair",
+    licenceNumber: "KL-0920210023456",
+    licenceCategory: "HMV",
+    licenceExpiry: "2027-08-22",
+    safetyScore: 90,
+    status: "AVAILABLE",
+  },
+];
