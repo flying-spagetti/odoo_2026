@@ -7,21 +7,30 @@ import {
   requireTripMutationRole,
 } from "@/lib/auth/acting-user";
 import { toTripFailure } from "./trip.errors";
-import { completeTripInputSchema } from "./trip.schema";
+import {
+  completeTripInputSchema,
+  createTripInputSchema,
+} from "./trip.schema";
 import {
   cancelTrip,
   completeTrip,
+  createTrip,
   dispatchTrip,
   getDispatchReadiness,
   getTripDetail,
+  listEligibleDriversForTrip,
+  listEligibleVehiclesForTrip,
   listLiveBoardTrips,
 } from "./trip.service";
 import type {
   CompleteTripInput,
+  CreateTripInput,
   DispatchReadiness,
   TripActionResult,
   TripBoardItem,
   TripDetailView,
+  TripDriverOption,
+  TripVehicleOption,
 } from "./trip.types";
 
 async function runTripAction<T>(
@@ -53,6 +62,24 @@ export async function getTripDetailAction(
   });
 }
 
+export async function listEligibleVehiclesForTripAction(): Promise<
+  TripActionResult<TripVehicleOption[]>
+> {
+  return runTripAction(async () => {
+    await requireAuthenticatedOperationalUser();
+    return listEligibleVehiclesForTrip();
+  });
+}
+
+export async function listEligibleDriversForTripAction(): Promise<
+  TripActionResult<TripDriverOption[]>
+> {
+  return runTripAction(async () => {
+    await requireAuthenticatedOperationalUser();
+    return listEligibleDriversForTrip();
+  });
+}
+
 export async function canMutateTripsAction(): Promise<boolean> {
   const user = await getActingUser();
   return (
@@ -67,6 +94,22 @@ export async function getDispatchReadinessAction(
   return runTripAction(async () => {
     await requireAuthenticatedOperationalUser();
     return getDispatchReadiness(tripId);
+  });
+}
+
+export async function createTripAction(
+  input: CreateTripInput,
+): Promise<TripActionResult<TripDetailView>> {
+  return runTripAction(async () => {
+    await requireTripMutationRole();
+
+    const parsed = createTripInputSchema.safeParse(input);
+
+    if (!parsed.success) {
+      throw parsed.error;
+    }
+
+    return createTrip(parsed.data);
   });
 }
 

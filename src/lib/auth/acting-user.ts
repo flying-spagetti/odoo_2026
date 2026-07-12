@@ -18,6 +18,10 @@ const OPERATIONAL_ROLES: Role[] = [
 ];
 
 const TRIP_MUTATION_ROLES: Role[] = [Role.FLEET_MANAGER, Role.DISPATCHER];
+const EXPENSE_MUTATION_ROLES: Role[] = [
+  Role.FLEET_MANAGER,
+  Role.FINANCIAL_ANALYST,
+];
 const FLEET_MANAGER_ROLE = Role.FLEET_MANAGER;
 
 async function resolveActingUser(): Promise<ActingUser | null> {
@@ -85,6 +89,19 @@ export async function requireFleetManagerRole(): Promise<ActingUser> {
     throw new TripDomainError(
       "FORBIDDEN",
       "You do not have permission to perform this action.",
+    );
+  }
+
+  return user;
+}
+
+export async function requireExpenseMutationRole(): Promise<ActingUser> {
+  const user = await requireAuthenticatedUser();
+
+  if (!EXPENSE_MUTATION_ROLES.includes(user.role)) {
+    throw new TripDomainError(
+      "FORBIDDEN",
+      "You do not have permission to manage fuel and expenses.",
     );
   }
 

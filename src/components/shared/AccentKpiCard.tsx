@@ -22,6 +22,7 @@ export function AccentKpiCard({ label, value, accentColor }: AccentKpiCardProps)
       overflow="hidden"
       size="sm"
       position="relative"
+      borderRadius="lg"
     >
       <Box
         position="absolute"

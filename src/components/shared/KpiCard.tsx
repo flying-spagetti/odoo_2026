@@ -18,7 +18,7 @@ export function KpiCard({
   description,
 }: KpiCardProps) {
   return (
-    <Card.Root size="sm" variant="outline">
+    <Card.Root size="sm" variant="outline" bg="gray.900" borderColor="gray.700" borderRadius="lg">
       <Card.Body gap="3">
         <Card.Title
           display="flex"
@@ -26,25 +26,25 @@ export function KpiCard({
           gap="2"
           fontSize="sm"
           fontWeight="medium"
-          color="fg.muted"
+          color="gray.400"
         >
           {icon && <Icon as={icon} boxSize="4" />}
           {label}
         </Card.Title>
-        <Text fontSize="2xl" fontWeight="semibold" lineHeight="1.2">
+        <Text fontSize="2xl" fontWeight="semibold" lineHeight="1.2" color="gray.100">
           {typeof value === "number" ? (
             <FormatNumber value={value} />
           ) : (
             value
           )}
           {suffix && (
-            <Text as="span" fontSize="md" fontWeight="medium" color="fg.muted" ml="1">
+            <Text as="span" fontSize="md" fontWeight="medium" color="gray.400" ml="1">
               {suffix}
             </Text>
           )}
         </Text>
         {description && (
-          <Text fontSize="xs" color="fg.subtle">
+          <Text fontSize="xs" color="gray.500">
             {description}
           </Text>
         )}

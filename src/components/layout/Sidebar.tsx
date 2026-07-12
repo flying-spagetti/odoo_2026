@@ -45,13 +45,14 @@ export function Sidebar() {
                 borderRadius="md"
                 fontSize="sm"
                 fontWeight={isActive ? "semibold" : "medium"}
-                color={isActive ? "orange.300" : "gray.400"}
-                bg={isActive ? "gray.900" : "transparent"}
-                borderWidth={isActive ? "1px" : "0"}
-                borderColor={isActive ? "orange.500" : "transparent"}
+                color={isActive ? "blue.300" : "gray.400"}
+                bg={isActive ? "gray.800/60" : "transparent"}
+                borderWidth="0"
+                borderLeftWidth={isActive ? "2px" : "0"}
+                borderColor={isActive ? "blue.400" : "transparent"}
                 _hover={{
-                  bg: "gray.900",
-                  color: isActive ? "orange.300" : "gray.200",
+                  bg: "gray.800/60",
+                  color: isActive ? "blue.300" : "gray.200",
                 }}
                 transition="background 0.15s, color 0.15s"
               >

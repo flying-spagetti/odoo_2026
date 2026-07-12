@@ -27,15 +27,16 @@ export function EmptyState({
       py="12"
       px="6"
       gap="3"
+      bg="gray.900"
     >
       {icon && (
-        <Icon as={icon} boxSize="10" color="fg.subtle" aria-hidden />
+        <Icon as={icon} boxSize="10" color="gray.500" aria-hidden />
       )}
-      <Text fontWeight="semibold" fontSize="md">
+      <Text fontWeight="semibold" fontSize="md" color="gray.100">
         {title}
       </Text>
       {description && (
-        <Text fontSize="sm" color="fg.muted" maxW="md">
+        <Text fontSize="sm" color="gray.400" maxW="md">
           {description}
         </Text>
       )}

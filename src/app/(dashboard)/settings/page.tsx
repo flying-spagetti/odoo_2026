@@ -1,10 +1,15 @@
-import { Box } from "@chakra-ui/react";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { SettingsContent } from "@/modules/settings/SettingsContent";
 
 export default function SettingsPage() {
   return (
-    <Box px={{ base: "4", md: "6" }} py={{ base: "5", md: "6" }}>
+    <PageContainer>
+      <PageHeader
+        title="Settings"
+        description="Depot configuration, units, and role-based access control"
+      />
       <SettingsContent />
-    </Box>
+    </PageContainer>
   );
 }

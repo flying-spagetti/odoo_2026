@@ -18,8 +18,10 @@ import type { MaintenanceListItem } from "../maintenance.types";
 import type { MaintenanceConfirmAction } from "./MaintenanceConfirmDialog";
 
 const headerCellStyles = {
-  color: "gray.400",
+  bg: "gray.900",
+  color: "gray.300",
   fontSize: "xs",
+  fontWeight: "semibold" as const,
   letterSpacing: "wider",
 };
 
@@ -192,6 +194,7 @@ export function MaintenanceRecordsList({
       bg="gray.900"
       borderColor="gray.700"
       overflow="hidden"
+      borderRadius="lg"
     >
       <Card.Body gap="4" p="0">
         <Box px="5" pt="5" pb="0">
@@ -233,10 +236,10 @@ export function MaintenanceRecordsList({
               ))}
             </VStack>
 
-            <Table.ScrollArea display={{ base: "none", lg: "block" }}>
-              <Table.Root size="sm" variant="line">
+            <Table.ScrollArea display={{ base: "none", lg: "block" }} bg="gray.900">
+              <Table.Root size="sm" variant="line" bg="gray.900" color="gray.100">
                 <Table.Header>
-                  <Table.Row borderColor="gray.700">
+                  <Table.Row bg="gray.900" borderColor="gray.700">
                     <Table.ColumnHeader {...headerCellStyles}>
                       VEHICLE
                     </Table.ColumnHeader>
@@ -271,16 +274,16 @@ export function MaintenanceRecordsList({
                 </Table.Header>
                 <Table.Body>
                   {records.map((record) => (
-                    <Table.Row key={record.id} borderColor="gray.800">
-                      <Table.Cell>
+                    <Table.Row key={record.id} bg="gray.900" borderColor="gray.800">
+                      <Table.Cell bg="gray.900">
                         <Text
                           fontSize="sm"
-                          fontWeight="medium"
-                          color="gray.100"
+                          fontWeight="semibold"
+                          color="white"
                         >
                           {record.vehicle.registrationNumber}
                         </Text>
-                        <Text fontSize="xs" color="gray.500">
+                        <Text fontSize="xs" color="gray.400">
                           {record.vehicle.name}
                         </Text>
                         <Flex mt="1" gap="2" align="center" wrap="wrap">
@@ -292,43 +295,43 @@ export function MaintenanceRecordsList({
                           )}
                         </Flex>
                       </Table.Cell>
-                      <Table.Cell>
-                        <Text fontSize="sm" color="gray.300">
+                      <Table.Cell bg="gray.900">
+                        <Text fontSize="sm" color="gray.200">
                           {record.title}
                         </Text>
                       </Table.Cell>
-                      <Table.Cell>
+                      <Table.Cell bg="gray.900">
                         <StatusBadge status={record.priority} />
                       </Table.Cell>
-                      <Table.Cell>
+                      <Table.Cell bg="gray.900">
                         <StatusBadge status={record.status} />
                       </Table.Cell>
-                      <Table.Cell>
-                        <Text fontSize="sm" color="gray.300">
+                      <Table.Cell bg="gray.900">
+                        <Text fontSize="sm" color="gray.200">
                           {formatPaiseAsRupees(record.estimatedCostPaise)}
                         </Text>
                       </Table.Cell>
-                      <Table.Cell>
-                        <Text fontSize="sm" color="gray.300">
+                      <Table.Cell bg="gray.900">
+                        <Text fontSize="sm" color="gray.200">
                           {formatPaiseAsRupees(record.actualCostPaise)}
                         </Text>
                       </Table.Cell>
-                      <Table.Cell>
-                        <Text fontSize="sm" color="gray.400">
+                      <Table.Cell bg="gray.900">
+                        <Text fontSize="sm" color="gray.300">
                           {formatDateTime(record.createdAt)}
                         </Text>
                       </Table.Cell>
-                      <Table.Cell>
-                        <Text fontSize="sm" color="gray.400">
+                      <Table.Cell bg="gray.900">
+                        <Text fontSize="sm" color="gray.300">
                           {formatDateTime(record.startedAt)}
                         </Text>
                       </Table.Cell>
-                      <Table.Cell>
-                        <Text fontSize="sm" color="gray.400">
+                      <Table.Cell bg="gray.900">
+                        <Text fontSize="sm" color="gray.300">
                           {formatDateTime(record.completedAt)}
                         </Text>
                       </Table.Cell>
-                      <Table.Cell>
+                      <Table.Cell bg="gray.900">
                         <RecordActions
                           record={record}
                           canMutate={canMutate}

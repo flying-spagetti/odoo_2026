@@ -1,14 +1,18 @@
 import { DriverStatus, TripStatus, VehicleStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
+import { startOfDay } from "date-fns";
 import { evaluateDispatchReadiness, markCheckFailed } from "./trip-readiness";
 import { TripDomainError } from "./trip.errors";
 import { completeTripInputSchema } from "./trip.schema";
 import { toTripBoardItem, toTripDetailView } from "./trip.mapper";
 import type {
   CompleteTripInput,
+  CreateTripInput,
   DispatchReadiness,
   TripBoardItem,
   TripDetailView,
+  TripDriverOption,
+  TripVehicleOption,
 } from "./trip.types";
 
 const tripWithRelationsInclude = {
@@ -53,6 +57,133 @@ export async function listLiveBoardTrips(): Promise<TripBoardItem[]> {
   });
 
   return trips.map(toTripBoardItem);
+}
+
+export async function listEligibleVehiclesForTrip(): Promise<
+  TripVehicleOption[]
+> {
+  const vehicles = await prisma.vehicle.findMany({
+    where: { status: VehicleStatus.AVAILABLE },
+    orderBy: [{ registrationNumber: "asc" }, { name: "asc" }],
+  });
+
+  return vehicles.map((vehicle) => ({
+    id: vehicle.id,
+    name: vehicle.name,
+    registrationNumber: vehicle.registrationNumber,
+    maxLoadKg: vehicle.maxLoadKg,
+    odometerKm: vehicle.odometerKm,
+  }));
+}
+
+export async function listEligibleDriversForTrip(): Promise<
+  TripDriverOption[]
+> {
+  const today = startOfDay(new Date());
+  const drivers = await prisma.driver.findMany({
+    where: {
+      status: DriverStatus.AVAILABLE,
+      licenseExpiryDate: { gte: today },
+    },
+    orderBy: { name: "asc" },
+  });
+
+  return drivers.map((driver) => ({
+    id: driver.id,
+    name: driver.name,
+    licenseNumber: driver.licenseNumber,
+    licenseExpiryDate: driver.licenseExpiryDate.toISOString(),
+  }));
+}
+
+export async function createTrip(
+  input: CreateTripInput,
+): Promise<TripDetailView> {
+  const [vehicle, driver] = await Promise.all([
+    prisma.vehicle.findUnique({ where: { id: input.vehicleId } }),
+    prisma.driver.findUnique({ where: { id: input.driverId } }),
+  ]);
+
+  if (!vehicle) {
+    throw new TripDomainError(
+      "VEHICLE_NOT_FOUND",
+      `Vehicle ${input.vehicleId} was not found.`,
+    );
+  }
+
+  if (!driver) {
+    throw new TripDomainError(
+      "DRIVER_NOT_FOUND",
+      `Driver ${input.driverId} was not found.`,
+    );
+  }
+
+  if (
+    vehicle.status === VehicleStatus.RETIRED ||
+    vehicle.status === VehicleStatus.IN_SHOP
+  ) {
+    throw new TripDomainError(
+      "VEHICLE_UNAVAILABLE",
+      `Vehicle cannot be assigned while status is ${vehicle.status}.`,
+    );
+  }
+
+  if (vehicle.status === VehicleStatus.ON_TRIP) {
+    throw new TripDomainError(
+      "VEHICLE_UNAVAILABLE",
+      "Vehicle is already on a trip.",
+    );
+  }
+
+  if (driver.status === DriverStatus.SUSPENDED) {
+    throw new TripDomainError(
+      "DRIVER_UNAVAILABLE",
+      "Suspended drivers cannot be assigned.",
+    );
+  }
+
+  if (driver.status === DriverStatus.ON_TRIP) {
+    throw new TripDomainError(
+      "DRIVER_UNAVAILABLE",
+      "Driver is already on a trip.",
+    );
+  }
+
+  if (driver.status === DriverStatus.OFF_DUTY) {
+    throw new TripDomainError(
+      "DRIVER_UNAVAILABLE",
+      "Off-duty drivers cannot be assigned.",
+    );
+  }
+
+  if (startOfDay(driver.licenseExpiryDate) < startOfDay(new Date())) {
+    throw new TripDomainError(
+      "DRIVER_UNAVAILABLE",
+      "Driver licence has expired.",
+    );
+  }
+
+  if (input.cargoWeightKg > vehicle.maxLoadKg) {
+    throw new TripDomainError(
+      "VALIDATION_ERROR",
+      `Cargo weight (${input.cargoWeightKg} kg) exceeds vehicle capacity (${vehicle.maxLoadKg} kg).`,
+    );
+  }
+
+  const trip = await prisma.trip.create({
+    data: {
+      source: input.source,
+      destination: input.destination,
+      cargoWeightKg: input.cargoWeightKg,
+      plannedDistanceKm: input.plannedDistanceKm,
+      vehicleId: input.vehicleId,
+      driverId: input.driverId,
+      status: TripStatus.DRAFT,
+    },
+    include: tripWithRelationsInclude,
+  });
+
+  return toTripDetailView(trip);
 }
 
 export async function getTripDetail(tripId: string): Promise<TripDetailView> {

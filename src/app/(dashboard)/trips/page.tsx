@@ -7,7 +7,7 @@ export default function TripsPage() {
     <PageContainer>
       <PageHeader
         title="Trip Dispatcher"
-        description="Review draft trips, validate dispatch readiness, and monitor the live board"
+        description="Create draft trips, validate dispatch readiness, and monitor the live board"
       />
       <TripDispatcher />
     </PageContainer>

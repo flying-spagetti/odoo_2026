@@ -2,29 +2,43 @@
 
 import {
   Badge,
+  Box,
   Button,
+  Card,
   Flex,
-  FormatNumber,
   HStack,
   Icon,
-  IconButton,
-  Input,
-  InputGroup,
   NativeSelect,
+  Table,
   Text,
+  VStack,
 } from "@chakra-ui/react";
 import { format, isPast, parseISO } from "date-fns";
 import { useMemo, useState } from "react";
-import { LuEllipsis, LuPlus, LuSearch, LuTriangleAlert } from "react-icons/lu";
-import { DataTable, type DataTableColumn } from "@/components/shared/DataTable";
+import { LuPlus, LuTriangleAlert } from "react-icons/lu";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { ErrorState } from "@/components/shared/ErrorState";
+import { LoadingState } from "@/components/shared/LoadingState";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { MOCK_DRIVERS } from "@/lib/mock-data/drivers";
-import { DRIVER_STATUSES } from "@/types/status";
-import type { Driver } from "@/types/driver";
+import { DRIVER_STATUSES, getStatusConfig } from "@/types/status";
+import type { DriverListItem } from "./driver.types";
 
-interface DriverDirectoryProps {
-  drivers?: Driver[];
-  isLoading?: boolean;
+const headerCellStyles = {
+  bg: "gray.900",
+  color: "gray.300",
+  fontSize: "xs",
+  fontWeight: "semibold" as const,
+  letterSpacing: "wider",
+};
+
+function maskContactNumber(contactNumber: string): string {
+  const digits = contactNumber.replace(/\D/g, "");
+
+  if (digits.length < 5) {
+    return contactNumber;
+  }
+
+  return `${digits.slice(0, 5)}${"x".repeat(5)}`;
 }
 
 function LicenceExpiryCell({ expiry }: { expiry: string }) {
@@ -32,149 +46,265 @@ function LicenceExpiryCell({ expiry }: { expiry: string }) {
   const expired = isPast(expiryDate);
 
   return (
-    <HStack gap="2">
-      <Text fontSize="sm">{format(expiryDate, "dd MMM yyyy")}</Text>
+    <HStack gap="2" flexWrap="wrap">
+      <Text fontSize="sm" color="gray.200">
+        {format(expiryDate, "MM/yyyy")}
+      </Text>
       {expired && (
         <Badge colorPalette="red" variant="subtle" size="sm">
           <Icon as={LuTriangleAlert} boxSize="3" mr="1" />
-          Expired
+          Expire
         </Badge>
       )}
     </HStack>
   );
 }
 
+interface DriverDirectoryProps {
+  drivers: DriverListItem[];
+  isLoading?: boolean;
+  errorMessage?: string | null;
+  canMutate?: boolean;
+  onRetry?: () => void;
+  onAddDriver?: () => void;
+}
+
 export function DriverDirectory({
-  drivers = MOCK_DRIVERS,
+  drivers,
   isLoading = false,
+  errorMessage = null,
+  canMutate = false,
+  onRetry,
+  onAddDriver,
 }: DriverDirectoryProps) {
-  const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
   const filteredDrivers = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
     return drivers.filter((driver) => {
-      const matchesSearch =
-        !query ||
-        driver.name.toLowerCase().includes(query) ||
-        driver.licenceNumber.toLowerCase().includes(query);
-
-      const matchesStatus =
-        statusFilter === "ALL" || driver.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
+      return statusFilter === "ALL" || driver.status === statusFilter;
     });
-  }, [drivers, search, statusFilter]);
+  }, [drivers, statusFilter]);
 
-  const columns: DataTableColumn<Driver>[] = [
-    {
-      key: "driver",
-      header: "Driver",
-      render: (driver) => (
-        <Text fontWeight="medium" fontSize="sm">
-          {driver.name}
-        </Text>
-      ),
-    },
-    {
-      key: "licenceNumber",
-      header: "Licence Number",
-      hideBelow: "sm",
-      render: (driver) => (
-        <Text fontSize="sm" fontFamily="mono">
-          {driver.licenceNumber}
-        </Text>
-      ),
-    },
-    {
-      key: "licenceCategory",
-      header: "Licence Category",
-      hideBelow: "md",
-      render: (driver) => <Text fontSize="sm">{driver.licenceCategory}</Text>,
-    },
-    {
-      key: "licenceExpiry",
-      header: "Licence Expiry",
-      render: (driver) => <LicenceExpiryCell expiry={driver.licenceExpiry} />,
-    },
-    {
-      key: "safetyScore",
-      header: "Safety Score",
-      hideBelow: "md",
-      render: (driver) => (
-        <Text fontSize="sm">
-          <FormatNumber value={driver.safetyScore} />
-        </Text>
-      ),
-    },
-    {
-      key: "status",
-      header: "Status",
-      render: (driver) => <StatusBadge status={driver.status} />,
-    },
-    {
-      key: "actions",
-      header: "Actions",
-      render: () => (
-        <IconButton aria-label="Driver actions" variant="ghost" size="xs">
-          <LuEllipsis />
-        </IconButton>
-      ),
-    },
-  ];
+  if (errorMessage && drivers.length === 0 && !isLoading) {
+    return (
+      <ErrorState
+        title="Unable to load drivers"
+        message={errorMessage}
+        onRetry={onRetry}
+      />
+    );
+  }
 
   return (
-    <Flex direction="column" gap="4">
+    <Flex direction="column" gap="5">
       <Flex
-        direction={{ base: "column", md: "row" }}
+        direction={{ base: "column", sm: "row" }}
         gap="3"
-        align={{ base: "stretch", md: "center" }}
+        align={{ base: "stretch", sm: "center" }}
         justify="space-between"
       >
-        <HStack gap="3" flex="1" flexWrap="wrap">
-          <InputGroup
-            maxW={{ base: "full", md: "xs" }}
-            startElement={<LuSearch />}
+        <NativeSelect.Root size="sm" width={{ base: "full", sm: "180px" }}>
+          <NativeSelect.Field
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+            aria-label="Filter by status"
+            bg="gray.800"
+            borderColor="gray.700"
+            color="gray.100"
           >
-            <Input
-              placeholder="Search drivers..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              size="sm"
-            />
-          </InputGroup>
-          <NativeSelect.Root size="sm" width={{ base: "full", sm: "160px" }}>
-            <NativeSelect.Field
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              aria-label="Filter by status"
-            >
-              <option value="ALL">All statuses</option>
-              {DRIVER_STATUSES.map((status) => (
-                <option key={status} value={status}>
-                  {status.replace(/_/g, " ")}
-                </option>
-              ))}
-            </NativeSelect.Field>
-            <NativeSelect.Indicator />
-          </NativeSelect.Root>
-        </HStack>
-        <Button size="sm" colorPalette="blue" flexShrink={0}>
+            <option value="ALL">Status: All</option>
+            {DRIVER_STATUSES.map((status) => (
+              <option key={status} value={status}>
+                {getStatusConfig(status).label}
+              </option>
+            ))}
+          </NativeSelect.Field>
+          <NativeSelect.Indicator color="gray.400" />
+        </NativeSelect.Root>
+
+        <Button
+          size="sm"
+          colorPalette="blue"
+          flexShrink={0}
+          disabled={!canMutate}
+          onClick={onAddDriver}
+        >
           <LuPlus />
           Add Driver
         </Button>
       </Flex>
 
-      <DataTable
-        columns={columns}
-        data={filteredDrivers}
-        isLoading={isLoading}
-        loadingMessage="Loading drivers..."
-        emptyTitle="No drivers found"
-        emptyDescription="Try adjusting your search or filters, or add a new driver."
-        getRowKey={(driver) => driver.id}
-      />
+      {!canMutate && (
+        <Text fontSize="xs" color="gray.500">
+          Adding drivers requires Fleet Manager or Safety Officer role.
+        </Text>
+      )}
+
+      <Card.Root
+        variant="outline"
+        bg="gray.900"
+        borderColor="gray.700"
+        overflow="hidden"
+        borderRadius="lg"
+      >
+        <Card.Body p="0">
+          {isLoading ? (
+            <LoadingState message="Loading drivers..." />
+          ) : filteredDrivers.length === 0 ? (
+            <EmptyState
+              title="No drivers found"
+              description={
+                canMutate
+                  ? "Try adjusting the status filter, or add a new driver profile."
+                  : "Try adjusting the status filter."
+              }
+              actionLabel={canMutate ? "Add Driver" : undefined}
+              onAction={canMutate ? onAddDriver : undefined}
+            />
+          ) : (
+            <Table.ScrollArea bg="gray.900">
+              <Table.Root size="sm" variant="line" bg="gray.900" color="gray.100">
+                <Table.Header>
+                  <Table.Row bg="gray.900" borderColor="gray.700">
+                    <Table.ColumnHeader {...headerCellStyles}>
+                      DRIVER
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader {...headerCellStyles}>
+                      LICENSE NO.
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader
+                      {...headerCellStyles}
+                      display={{ base: "none", sm: "table-cell" }}
+                    >
+                      CATEGORY
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader {...headerCellStyles}>
+                      EXPIRY
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader
+                      {...headerCellStyles}
+                      display={{ base: "none", md: "table-cell" }}
+                    >
+                      CONTACT
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader
+                      {...headerCellStyles}
+                      display={{ base: "none", md: "table-cell" }}
+                    >
+                      TRIP COMPL.
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader
+                      {...headerCellStyles}
+                      display={{ base: "none", lg: "table-cell" }}
+                    >
+                      SAFETY
+                    </Table.ColumnHeader>
+                    <Table.ColumnHeader {...headerCellStyles}>
+                      STATUS
+                    </Table.ColumnHeader>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {filteredDrivers.map((driver) => (
+                    <Table.Row key={driver.id} bg="gray.900" borderColor="gray.800">
+                      <Table.Cell bg="gray.900">
+                        <Text
+                          fontSize="sm"
+                          fontWeight="semibold"
+                          color="white"
+                        >
+                          {driver.name}
+                        </Text>
+                      </Table.Cell>
+                      <Table.Cell bg="gray.900">
+                        <Text
+                          fontSize="sm"
+                          color="gray.200"
+                          fontFamily="mono"
+                        >
+                          {driver.licenseNumber}
+                        </Text>
+                      </Table.Cell>
+                      <Table.Cell bg="gray.900" display={{ base: "none", sm: "table-cell" }}>
+                        <Text fontSize="sm" color="gray.200">
+                          {driver.licenseCategory}
+                        </Text>
+                      </Table.Cell>
+                      <Table.Cell bg="gray.900">
+                        <LicenceExpiryCell expiry={driver.licenseExpiryDate} />
+                      </Table.Cell>
+                      <Table.Cell bg="gray.900" display={{ base: "none", md: "table-cell" }}>
+                        <Text fontSize="sm" color="gray.200" fontFamily="mono">
+                          {maskContactNumber(driver.contactNumber)}
+                        </Text>
+                      </Table.Cell>
+                      <Table.Cell bg="gray.900" display={{ base: "none", md: "table-cell" }}>
+                        <Text fontSize="sm" color="gray.200">
+                          {driver.tripCompletionPercent === null
+                            ? "—"
+                            : `${driver.tripCompletionPercent}%`}
+                        </Text>
+                      </Table.Cell>
+                      <Table.Cell bg="gray.900" display={{ base: "none", lg: "table-cell" }}>
+                        <VStack align="start" gap="1">
+                          <StatusBadge status={driver.safetyClearance} />
+                          <Text fontSize="xs" color="gray.400">
+                            Score {driver.safetyScore}
+                          </Text>
+                        </VStack>
+                      </Table.Cell>
+                      <Table.Cell bg="gray.900">
+                        <StatusBadge status={driver.status} />
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Root>
+            </Table.ScrollArea>
+          )}
+        </Card.Body>
+      </Card.Root>
+
+      <VStack align="stretch" gap="3">
+        <Text
+          fontSize="xs"
+          fontWeight="semibold"
+          letterSpacing="wider"
+          color="gray.500"
+        >
+          TOGGLE STAT
+        </Text>
+        <HStack gap="2" flexWrap="wrap">
+          <Button
+            size="sm"
+            variant={statusFilter === "ALL" ? "solid" : "outline"}
+            colorPalette="gray"
+            onClick={() => setStatusFilter("ALL")}
+          >
+            All
+          </Button>
+          {DRIVER_STATUSES.map((status) => {
+            const config = getStatusConfig(status);
+            return (
+              <Button
+                key={status}
+                size="sm"
+                variant={statusFilter === status ? "solid" : "outline"}
+                colorPalette={config.colorPalette}
+                onClick={() => setStatusFilter(status)}
+              >
+                {config.label}
+              </Button>
+            );
+          })}
+        </HStack>
+      </VStack>
+
+      <Box>
+        <Text fontSize="xs" color="gray.500">
+          Expired licence or Suspended status blocks trip assignment.
+        </Text>
+      </Box>
     </Flex>
   );
 }

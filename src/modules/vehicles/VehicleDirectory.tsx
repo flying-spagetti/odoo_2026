@@ -13,22 +13,32 @@ import {
 import { useMemo, useState } from "react";
 import { LuPlus } from "react-icons/lu";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ErrorState } from "@/components/shared/ErrorState";
 import { LoadingState } from "@/components/shared/LoadingState";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { MOCK_VEHICLES } from "@/lib/mock-data/vehicles";
 import { formatIndianCurrency, formatOdometer } from "@/lib/utils/format";
 import { VEHICLE_STATUSES } from "@/types/status";
-import type { Vehicle } from "@/types/vehicle";
-import { VEHICLE_REGISTRY_TYPE_FILTERS } from "@/types/vehicle";
+import { VEHICLE_TYPE_LABELS } from "@/types/vehicle";
+import type { VehicleListItem } from "./vehicle.types";
+
+const VEHICLE_TYPE_FILTERS = ["All", ...Object.values(VEHICLE_TYPE_LABELS)] as const;
 
 interface VehicleDirectoryProps {
-  vehicles?: Vehicle[];
+  vehicles: VehicleListItem[];
   isLoading?: boolean;
+  errorMessage?: string | null;
+  canMutate?: boolean;
+  onRetry?: () => void;
+  onAddVehicle?: () => void;
 }
 
 export function VehicleDirectory({
-  vehicles = MOCK_VEHICLES,
+  vehicles,
   isLoading = false,
+  errorMessage = null,
+  canMutate = false,
+  onRetry,
+  onAddVehicle,
 }: VehicleDirectoryProps) {
   const [registrationSearch, setRegistrationSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -51,6 +61,16 @@ export function VehicleDirectory({
     });
   }, [vehicles, registrationSearch, statusFilter, typeFilter]);
 
+  if (errorMessage && vehicles.length === 0 && !isLoading) {
+    return (
+      <ErrorState
+        title="Unable to load vehicles"
+        message={errorMessage}
+        onRetry={onRetry}
+      />
+    );
+  }
+
   return (
     <Flex direction="column" gap="5">
       <Flex
@@ -69,7 +89,7 @@ export function VehicleDirectory({
               borderColor="gray.700"
               color="gray.100"
             >
-              {VEHICLE_REGISTRY_TYPE_FILTERS.map((type) => (
+              {VEHICLE_TYPE_FILTERS.map((type) => (
                 <option key={type} value={type}>
                   Type: {type}
                 </option>
@@ -112,20 +132,29 @@ export function VehicleDirectory({
 
         <Button
           size="sm"
-          colorPalette="orange"
+          colorPalette="blue"
           flexShrink={0}
           alignSelf={{ base: "stretch", lg: "auto" }}
+          disabled={!canMutate}
+          onClick={onAddVehicle}
         >
           <LuPlus />
           Add Vehicle
         </Button>
       </Flex>
 
+      {!canMutate && (
+        <Text fontSize="xs" color="gray.500">
+          Adding vehicles requires Fleet Manager role.
+        </Text>
+      )}
+
       <Card.Root
         variant="outline"
         bg="gray.900"
         borderColor="gray.700"
         overflow="hidden"
+        borderRadius="lg"
       >
         <Card.Body p="0">
           {isLoading ? (
@@ -133,95 +162,150 @@ export function VehicleDirectory({
           ) : filteredVehicles.length === 0 ? (
             <EmptyState
               title="No vehicles found"
-              description="Try adjusting your filters or add a new vehicle to the registry."
+              description={
+                canMutate
+                  ? "Try adjusting your filters or add a new vehicle to the registry."
+                  : "Try adjusting your filters."
+              }
+              actionLabel={canMutate ? "Add Vehicle" : undefined}
+              onAction={canMutate ? onAddVehicle : undefined}
             />
           ) : (
-            <Table.ScrollArea>
-              <Table.Root size="sm" variant="line">
+            <Table.ScrollArea bg="gray.900">
+              <Table.Root size="sm" variant="line" bg="gray.900" color="gray.100">
                 <Table.Header>
-                  <Table.Row borderColor="gray.700">
-                    <Table.ColumnHeader color="gray.400" fontSize="xs" letterSpacing="wider">
+                  <Table.Row bg="gray.900" borderColor="gray.700">
+                    <Table.ColumnHeader
+                      bg="gray.900"
+                      color="gray.300"
+                      fontSize="xs"
+                      fontWeight="semibold"
+                      letterSpacing="wider"
+                    >
                       REG. NO. (UNIQUE)
                     </Table.ColumnHeader>
                     <Table.ColumnHeader
-                      color="gray.400"
+                      bg="gray.900"
+                      color="gray.300"
                       fontSize="xs"
+                      fontWeight="semibold"
                       letterSpacing="wider"
                       display={{ base: "none", sm: "table-cell" }}
                     >
                       NAME/MODEL
                     </Table.ColumnHeader>
                     <Table.ColumnHeader
-                      color="gray.400"
+                      bg="gray.900"
+                      color="gray.300"
                       fontSize="xs"
+                      fontWeight="semibold"
                       letterSpacing="wider"
                       display={{ base: "none", md: "table-cell" }}
                     >
                       TYPE
                     </Table.ColumnHeader>
                     <Table.ColumnHeader
-                      color="gray.400"
+                      bg="gray.900"
+                      color="gray.300"
                       fontSize="xs"
+                      fontWeight="semibold"
                       letterSpacing="wider"
                       display={{ base: "none", md: "table-cell" }}
                     >
                       CAPACITY
                     </Table.ColumnHeader>
                     <Table.ColumnHeader
-                      color="gray.400"
+                      bg="gray.900"
+                      color="gray.300"
                       fontSize="xs"
+                      fontWeight="semibold"
                       letterSpacing="wider"
                       display={{ base: "none", lg: "table-cell" }}
                     >
                       ODOMETER
                     </Table.ColumnHeader>
                     <Table.ColumnHeader
-                      color="gray.400"
+                      bg="gray.900"
+                      color="gray.300"
                       fontSize="xs"
+                      fontWeight="semibold"
                       letterSpacing="wider"
                       display={{ base: "none", lg: "table-cell" }}
                     >
                       ACQ. COST
                     </Table.ColumnHeader>
-                    <Table.ColumnHeader color="gray.400" fontSize="xs" letterSpacing="wider">
+                    <Table.ColumnHeader
+                      bg="gray.900"
+                      color="gray.300"
+                      fontSize="xs"
+                      fontWeight="semibold"
+                      letterSpacing="wider"
+                    >
                       STATUS
                     </Table.ColumnHeader>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
                   {filteredVehicles.map((vehicle) => (
-                    <Table.Row key={vehicle.id} borderColor="gray.800">
-                      <Table.Cell>
-                        <Text fontSize="sm" fontWeight="medium" color="gray.100" fontFamily="mono">
+                    <Table.Row
+                      key={vehicle.id}
+                      bg="gray.900"
+                      borderColor="gray.800"
+                    >
+                      <Table.Cell bg="gray.900">
+                        <Text
+                          fontSize="sm"
+                          fontWeight="semibold"
+                          color="white"
+                          fontFamily="mono"
+                        >
                           {vehicle.registrationNumber}
                         </Text>
                       </Table.Cell>
-                      <Table.Cell display={{ base: "none", sm: "table-cell" }}>
-                        <Text fontSize="sm" color="gray.200">
+                      <Table.Cell
+                        bg="gray.900"
+                        display={{ base: "none", sm: "table-cell" }}
+                      >
+                        <Text fontSize="sm" color="gray.100">
                           {vehicle.name}
                         </Text>
+                        <Text fontSize="xs" color="gray.400">
+                          {vehicle.model}
+                        </Text>
                       </Table.Cell>
-                      <Table.Cell display={{ base: "none", md: "table-cell" }}>
-                        <Text fontSize="sm" color="gray.300">
+                      <Table.Cell
+                        bg="gray.900"
+                        display={{ base: "none", md: "table-cell" }}
+                      >
+                        <Text fontSize="sm" color="gray.200">
                           {vehicle.typeLabel}
                         </Text>
                       </Table.Cell>
-                      <Table.Cell display={{ base: "none", md: "table-cell" }}>
-                        <Text fontSize="sm" color="gray.300">
+                      <Table.Cell
+                        bg="gray.900"
+                        display={{ base: "none", md: "table-cell" }}
+                      >
+                        <Text fontSize="sm" color="gray.200">
                           {vehicle.capacityLabel}
                         </Text>
                       </Table.Cell>
-                      <Table.Cell display={{ base: "none", lg: "table-cell" }}>
-                        <Text fontSize="sm" color="gray.300">
+                      <Table.Cell
+                        bg="gray.900"
+                        display={{ base: "none", lg: "table-cell" }}
+                      >
+                        <Text fontSize="sm" color="gray.200">
                           {formatOdometer(vehicle.odometerKm)}
                         </Text>
                       </Table.Cell>
-                      <Table.Cell display={{ base: "none", lg: "table-cell" }}>
-                        <Text fontSize="sm" color="gray.300">
-                          {formatIndianCurrency(vehicle.acquisitionCost)}
+                      <Table.Cell
+                        bg="gray.900"
+                        display={{ base: "none", lg: "table-cell" }}
+                      >
+                        <Text fontSize="sm" color="gray.200">
+                          ₹{formatIndianCurrency(vehicle.acquisitionCost)}
                         </Text>
                       </Table.Cell>
-                      <Table.Cell>
+                      <Table.Cell bg="gray.900">
                         <StatusBadge status={vehicle.status} />
                       </Table.Cell>
                     </Table.Row>
@@ -233,9 +317,9 @@ export function VehicleDirectory({
         </Card.Body>
       </Card.Root>
 
-      <Text fontSize="sm" color="orange.400">
-        Rule: Registration No. must be unique · Retired/In Shop vehicles are hidden
-        from Trip Dispatcher
+      <Text fontSize="xs" color="gray.500">
+        Registration numbers must be unique. Retired and In Shop vehicles are
+        excluded from Trip Dispatcher.
       </Text>
     </Flex>
   );

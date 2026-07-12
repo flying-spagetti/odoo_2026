@@ -1,10 +1,15 @@
-import { Box } from "@chakra-ui/react";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { AnalyticsContent } from "@/modules/analytics/AnalyticsContent";
 
 export default function AnalyticsPage() {
   return (
-    <Box px={{ base: "4", md: "6" }} py={{ base: "5", md: "6" }}>
+    <PageContainer>
+      <PageHeader
+        title="Analytics"
+        description="Fleet performance, operational costs, and utilization trends"
+      />
       <AnalyticsContent />
-    </Box>
+    </PageContainer>
   );
 }

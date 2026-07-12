@@ -79,7 +79,7 @@ export function TripDispatchPanel({
       <Box
         borderWidth="1px"
         borderColor="gray.700"
-        borderRadius="md"
+        borderRadius="lg"
         bg="gray.900"
         p="5"
       >
@@ -95,12 +95,13 @@ export function TripDispatchPanel({
       <Box
         borderWidth="1px"
         borderColor="gray.700"
-        borderRadius="md"
+        borderRadius="lg"
         bg="gray.900"
         p="5"
       >
         <Text fontSize="sm" color="gray.400">
-          Select a trip from the live board to review dispatch readiness.
+          Select a trip from the live board, or create a new draft trip to begin
+          dispatch.
         </Text>
       </Box>
     );
@@ -121,7 +122,7 @@ export function TripDispatchPanel({
     <Box
       borderWidth="1px"
       borderColor="gray.700"
-      borderRadius="md"
+      borderRadius="lg"
       bg="gray.900"
       p={{ base: "4", md: "5" }}
     >

@@ -56,8 +56,10 @@ const sectionTitleStyles = {
 };
 
 const headerCellStyles = {
-  color: "gray.400",
+  bg: "gray.900",
+  color: "gray.300",
   fontSize: "xs",
+  fontWeight: "semibold" as const,
   letterSpacing: "wider",
 };
 
@@ -72,14 +74,14 @@ function PermissionCell({ level }: { level: PermissionLevel }) {
 
   if (level === "view") {
     return (
-      <Text fontSize="sm" color="gray.300">
+      <Text fontSize="sm" color="gray.200">
         view
       </Text>
     );
   }
 
   return (
-    <Text fontSize="sm" color="gray.600" aria-label="No access">
+    <Text fontSize="sm" color="gray.500" aria-label="No access">
       —
     </Text>
   );
@@ -117,7 +119,7 @@ export function SettingsContent({
       gap={{ base: "6", xl: "8" }}
       alignItems="start"
     >
-      <Card.Root variant="outline" bg="gray.900" borderColor="gray.700">
+      <Card.Root variant="outline" bg="gray.900" borderColor="gray.700" borderRadius="lg">
         <Card.Body gap="5">
           <Text {...sectionTitleStyles}>General</Text>
 
@@ -190,16 +192,16 @@ export function SettingsContent({
         </Card.Body>
       </Card.Root>
 
-      <Card.Root variant="outline" bg="gray.900" borderColor="gray.700" overflow="hidden">
+      <Card.Root variant="outline" bg="gray.900" borderColor="gray.700" overflow="hidden" borderRadius="lg">
         <Card.Body gap="4" p="0">
           <Box px="5" pt="5">
             <Text {...sectionTitleStyles}>Role-Based Access (RBAC)</Text>
           </Box>
 
-          <Table.ScrollArea>
-            <Table.Root size="sm" variant="line">
+          <Table.ScrollArea bg="gray.900">
+            <Table.Root size="sm" variant="line" bg="gray.900" color="gray.100">
               <Table.Header>
-                <Table.Row borderColor="gray.700">
+                <Table.Row bg="gray.900" borderColor="gray.700">
                   <Table.ColumnHeader {...headerCellStyles}>ROLE</Table.ColumnHeader>
                   {RBAC_MODULES.map((module) => (
                     <Table.ColumnHeader
@@ -218,15 +220,16 @@ export function SettingsContent({
               </Table.Header>
               <Table.Body>
                 {settings.rolePermissions.map((row) => (
-                  <Table.Row key={row.roleLabel} borderColor="gray.800">
-                    <Table.Cell>
-                      <Text fontSize="sm" fontWeight="medium" color="gray.100">
+                  <Table.Row key={row.roleLabel} bg="gray.900" borderColor="gray.800">
+                    <Table.Cell bg="gray.900">
+                      <Text fontSize="sm" fontWeight="semibold" color="white">
                         {row.roleLabel}
                       </Text>
                     </Table.Cell>
                     {RBAC_MODULES.map((module: RbacModule) => (
                       <Table.Cell
                         key={module}
+                        bg="gray.900"
                         display={{
                           base: module === "fleet" || module === "trips" ? "table-cell" : "none",
                           md: module === "analytics" ? "none" : "table-cell",

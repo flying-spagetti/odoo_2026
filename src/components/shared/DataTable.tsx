@@ -30,7 +30,7 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   if (isLoading) {
     return (
-      <Card.Root variant="outline">
+      <Card.Root variant="outline" bg="gray.900" borderColor="gray.700" borderRadius="lg">
         <Card.Body p="0">
           <LoadingState message={loadingMessage} />
         </Card.Body>
@@ -40,7 +40,7 @@ export function DataTable<T>({
 
   if (data.length === 0) {
     return (
-      <Card.Root variant="outline">
+      <Card.Root variant="outline" bg="gray.900" borderColor="gray.700" borderRadius="lg">
         <Card.Body p="0">
           <EmptyState title={emptyTitle} description={emptyDescription} />
         </Card.Body>
@@ -49,15 +49,20 @@ export function DataTable<T>({
   }
 
   return (
-    <Card.Root variant="outline" overflow="hidden">
+    <Card.Root variant="outline" overflow="hidden" bg="gray.900" borderColor="gray.700" borderRadius="lg">
       <Card.Body p="0">
-        <Table.ScrollArea>
-          <Table.Root size="sm" variant="line" striped>
+        <Table.ScrollArea bg="gray.900">
+          <Table.Root size="sm" variant="line" bg="gray.900" color="gray.100">
             <Table.Header>
-              <Table.Row>
+              <Table.Row bg="gray.900" borderColor="gray.700">
                 {columns.map((column) => (
                   <Table.ColumnHeader
                     key={column.key}
+                    bg="gray.900"
+                    color="gray.300"
+                    fontSize="xs"
+                    fontWeight="semibold"
+                    letterSpacing="wider"
                     display={
                       column.hideBelow
                         ? { base: "none", [column.hideBelow]: "table-cell" }
@@ -71,10 +76,12 @@ export function DataTable<T>({
             </Table.Header>
             <Table.Body>
               {data.map((row) => (
-                <Table.Row key={getRowKey(row)}>
+                <Table.Row key={getRowKey(row)} bg="gray.900" borderColor="gray.800">
                   {columns.map((column) => (
                     <Table.Cell
                       key={column.key}
+                      bg="gray.900"
+                      color="gray.100"
                       display={
                         column.hideBelow
                           ? { base: "none", [column.hideBelow]: "table-cell" }

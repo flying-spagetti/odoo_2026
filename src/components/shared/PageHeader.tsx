@@ -16,11 +16,11 @@ export function PageHeader({ title, description, actions }: PageHeaderProps) {
       mb={{ base: "5", md: "6" }}
     >
       <Box minW="0">
-        <Heading size="lg" mb={description ? "1" : "0"}>
+        <Heading size="lg" mb={description ? "1" : "0"} color="gray.100">
           {title}
         </Heading>
         {description && (
-          <Text color="fg.muted" fontSize="sm">
+          <Text color="gray.400" fontSize="sm">
             {description}
           </Text>
         )}

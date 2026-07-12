@@ -99,7 +99,7 @@ export function CreateMaintenanceForm({
 
   if (!canMutate) {
     return (
-      <Card.Root variant="outline" bg="gray.900" borderColor="gray.700">
+      <Card.Root variant="outline" bg="gray.900" borderColor="gray.700" borderRadius="lg">
         <Card.Body gap="3">
           <Text
             fontSize="xs"
@@ -119,7 +119,7 @@ export function CreateMaintenanceForm({
   }
 
   return (
-    <Card.Root variant="outline" bg="gray.900" borderColor="gray.700">
+    <Card.Root variant="outline" bg="gray.900" borderColor="gray.700" borderRadius="lg">
       <Card.Body gap="5">
         <Text
           fontSize="xs"
@@ -230,7 +230,7 @@ export function CreateMaintenanceForm({
             <Button
               type="submit"
               size="lg"
-              colorPalette="orange"
+              colorPalette="blue"
               loading={isSubmitting}
               disabled={isSubmitting || vehicles.length === 0}
               w="full"

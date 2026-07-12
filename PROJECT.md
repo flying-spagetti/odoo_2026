@@ -38,7 +38,7 @@ The system must prevent invalid operations instead of merely warning users.
 - TypeScript
 - Chakra UI
 - Prisma
-- SQLite
+- Postgresql
 - Zod
 - Better Auth
 - Recharts

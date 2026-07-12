@@ -60,10 +60,11 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
                         borderRadius="md"
                         fontSize="sm"
                         fontWeight={isActive ? "semibold" : "medium"}
-                        color={isActive ? "orange.300" : "gray.400"}
-                        bg={isActive ? "gray.900" : "transparent"}
-                        borderWidth={isActive ? "1px" : "0"}
-                        borderColor={isActive ? "orange.500" : "transparent"}
+                        color={isActive ? "blue.300" : "gray.400"}
+                        bg={isActive ? "gray.800/60" : "transparent"}
+                        borderWidth="0"
+                        borderLeftWidth={isActive ? "2px" : "0"}
+                        borderColor={isActive ? "blue.400" : "transparent"}
                       >
                         <Icon as={item.icon} boxSize="4" />
                         <Text>{item.label}</Text>

@@ -7,19 +7,26 @@ import {
   canMutateTripsAction,
   cancelTripAction,
   completeTripAction,
+  createTripAction,
   dispatchTripAction,
   getDispatchReadinessAction,
   getTripDetailAction,
+  listEligibleDriversForTripAction,
+  listEligibleVehiclesForTripAction,
   listLiveBoardTripsAction,
 } from "./trip.actions";
 import { CancelTripDialog } from "./components/CancelTripDialog";
+import { CreateTripDialog } from "./components/CreateTripDialog";
 import { LiveTripBoard } from "./components/LiveTripBoard";
 import { TripDispatchPanel } from "./components/TripDispatchPanel";
 import type {
+  CreateTripInput,
   DispatchReadiness,
   TripBoardItem,
   TripDetailView,
+  TripDriverOption,
   TripFailure,
+  TripVehicleOption,
 } from "./trip.types";
 
 export function TripDispatcher() {
@@ -34,6 +41,7 @@ export function TripDispatcher() {
     null,
   );
   const [cancelFailure, setCancelFailure] = useState<TripFailure | null>(null);
+  const [createFailure, setCreateFailure] = useState<TripFailure | null>(null);
   const [canMutate, setCanMutate] = useState(false);
   const [isBoardLoading, setIsBoardLoading] = useState(true);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
@@ -41,13 +49,23 @@ export function TripDispatcher() {
   const [isDispatching, setIsDispatching] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [createFormKey, setCreateFormKey] = useState(0);
   const [boardError, setBoardError] = useState<string | null>(null);
+  const [eligibleVehicles, setEligibleVehicles] = useState<TripVehicleOption[]>(
+    [],
+  );
+  const [eligibleDrivers, setEligibleDrivers] = useState<TripDriverOption[]>(
+    [],
+  );
 
-  const isMutating = isDispatching || isCompleting || isCancelling;
+  const isMutating =
+    isDispatching || isCompleting || isCancelling || isCreating;
 
   useEffect(() => {
-    canMutateTripsAction().then(setCanMutate);
+    void canMutateTripsAction().then(setCanMutate);
   }, []);
 
   const loadBoard = useCallback(async () => {
@@ -66,6 +84,25 @@ export function TripDispatcher() {
     setTrips(result.data);
     setIsBoardLoading(false);
     return result.data;
+  }, []);
+
+  const loadEligibleResources = useCallback(async () => {
+    const [vehiclesResult, driversResult] = await Promise.all([
+      listEligibleVehiclesForTripAction(),
+      listEligibleDriversForTripAction(),
+    ]);
+
+    if (vehiclesResult.success) {
+      setEligibleVehicles(vehiclesResult.data);
+    } else {
+      setEligibleVehicles([]);
+    }
+
+    if (driversResult.success) {
+      setEligibleDrivers(driversResult.data);
+    } else {
+      setEligibleDrivers([]);
+    }
   }, []);
 
   const loadTripDetail = useCallback(async (tripId: string) => {
@@ -102,10 +139,14 @@ export function TripDispatcher() {
 
   const refreshAll = useCallback(
     async (preferredTripId?: string | null) => {
-      const board = await loadBoard();
+      const [board] = await Promise.all([
+        loadBoard(),
+        loadEligibleResources(),
+      ]);
       const tripId = preferredTripId ?? selectedTripId;
 
       if (tripId && board.some((trip) => trip.id === tripId)) {
+        setSelectedTripId(tripId);
         await loadTripDetail(tripId);
         return;
       }
@@ -121,12 +162,15 @@ export function TripDispatcher() {
         setReadiness(null);
       }
     },
-    [loadBoard, loadTripDetail, selectedTripId],
+    [loadBoard, loadEligibleResources, loadTripDetail, selectedTripId],
   );
 
   useEffect(() => {
     void (async () => {
-      const board = await loadBoard();
+      const [board] = await Promise.all([
+        loadBoard(),
+        loadEligibleResources(),
+      ]);
       const firstDraft = board.find((trip) => trip.status === "DRAFT");
       const initialSelection = firstDraft?.id ?? board[0]?.id ?? null;
       setSelectedTripId(initialSelection);
@@ -135,7 +179,7 @@ export function TripDispatcher() {
         await loadTripDetail(initialSelection);
       }
     })();
-  }, [loadBoard, loadTripDetail]);
+  }, [loadBoard, loadEligibleResources, loadTripDetail]);
 
   const handleSelectTrip = async (tripId: string) => {
     if (isMutating) {
@@ -144,6 +188,47 @@ export function TripDispatcher() {
 
     setSelectedTripId(tripId);
     await loadTripDetail(tripId);
+  };
+
+  const openCreateDialog = async () => {
+    if (isMutating) {
+      return;
+    }
+
+    setCreateFailure(null);
+    await loadEligibleResources();
+    setCreateFormKey((current) => current + 1);
+    setCreateDialogOpen(true);
+  };
+
+  const handleCreateTrip = async (input: CreateTripInput) => {
+    if (isMutating) {
+      return false;
+    }
+
+    setIsCreating(true);
+    setCreateFailure(null);
+
+    const result = await createTripAction(input);
+
+    if (!result.success) {
+      setCreateFailure(result.error);
+      toaster.error({
+        title: "Unable to create trip",
+        description: result.error.message,
+      });
+      setIsCreating(false);
+      return false;
+    }
+
+    toaster.success({
+      title: "Draft trip created",
+      description: `${result.data.tripCode} is ready for dispatch review.`,
+    });
+
+    await refreshAll(result.data.id);
+    setIsCreating(false);
+    return true;
   };
 
   const handleDispatch = async () => {
@@ -188,7 +273,9 @@ export function TripDispatcher() {
     setIsCompleting(true);
     setCompleteFailure(null);
 
-    const result = await completeTripAction(selectedTripId, { finalOdometerKm });
+    const result = await completeTripAction(selectedTripId, {
+      finalOdometerKm,
+    });
 
     if (!result.success) {
       setCompleteFailure(result.error);
@@ -292,7 +379,11 @@ export function TripDispatcher() {
               trips={trips}
               selectedTripId={selectedTripId}
               isLoading={isBoardLoading}
+              canCreate={canMutate}
               onSelectTrip={handleSelectTrip}
+              onCreateTrip={() => {
+                void openCreateDialog();
+              }}
             />
           )}
         </Flex>
@@ -305,6 +396,19 @@ export function TripDispatcher() {
         onOpenChange={setCancelDialogOpen}
         onConfirm={handleCancelConfirm}
       />
+
+      {canMutate && (
+        <CreateTripDialog
+          key={createFormKey}
+          open={createDialogOpen}
+          vehicles={eligibleVehicles}
+          drivers={eligibleDrivers}
+          isSubmitting={isCreating}
+          failure={createFailure}
+          onOpenChange={setCreateDialogOpen}
+          onSubmit={handleCreateTrip}
+        />
+      )}
     </>
   );
 }

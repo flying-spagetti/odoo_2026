@@ -61,6 +61,10 @@ export const STATUS_CONFIG: Record<string, StatusConfig> = {
   MEDIUM: { label: "Medium", colorPalette: "blue" },
   HIGH: { label: "High", colorPalette: "orange" },
   CRITICAL: { label: "Critical", colorPalette: "red" },
+  TOLL: { label: "Toll", colorPalette: "blue" },
+  PARKING: { label: "Parking", colorPalette: "orange" },
+  REPAIR: { label: "Repair", colorPalette: "red" },
+  OTHER: { label: "Other", colorPalette: "gray" },
 };
 
 export function getStatusConfig(status: string): StatusConfig {

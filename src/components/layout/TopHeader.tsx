@@ -46,7 +46,12 @@ export function TopHeader() {
                 bg="gray.900"
                 borderColor="gray.700"
                 color="gray.100"
+                borderRadius="md"
                 _placeholder={{ color: "gray.500" }}
+                _focusVisible={{
+                  borderColor: "blue.500",
+                  boxShadow: "0 0 0 1px var(--chakra-colors-blue-500)",
+                }}
                 aria-label="Search"
               />
             </InputGroup>

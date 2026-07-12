@@ -84,10 +84,10 @@ export function DashboardContent() {
         />
       </Grid>
 
-      <Card.Root variant="outline">
+      <Card.Root variant="outline" bg="gray.900" borderColor="gray.700" borderRadius="lg">
         <Card.Header>
-          <Card.Title fontSize="md">Operational Overview</Card.Title>
-          <Card.Description>
+          <Card.Title fontSize="md" color="gray.100">Operational Overview</Card.Title>
+          <Card.Description color="gray.400">
             Recent fleet activity across trips, dispatch, and maintenance
           </Card.Description>
         </Card.Header>
@@ -104,13 +104,13 @@ export function DashboardContent() {
                 borderBottomWidth={
                   index < MOCK_FLEET_ACTIVITY.length - 1 ? "1px" : undefined
                 }
-                borderColor="border.muted"
+                borderColor="gray.800"
               >
                 <VStack align="stretch" gap="0.5" flex="1" minW="0">
-                  <Text fontSize="sm" fontWeight="medium" truncate>
+                  <Text fontSize="sm" fontWeight="medium" color="gray.200" truncate>
                     {item.description}
                   </Text>
-                  <Text fontSize="xs" color="fg.muted">
+                  <Text fontSize="xs" color="gray.500">
                     {format(new Date(item.timestamp), "dd MMM yyyy, HH:mm")}
                   </Text>
                 </VStack>
@@ -121,20 +121,20 @@ export function DashboardContent() {
         </Card.Body>
       </Card.Root>
 
-      <Card.Root variant="outline" bg="blue.50" borderColor="blue.100">
+      <Card.Root variant="outline" bg="gray.900" borderColor="gray.700" borderRadius="lg">
         <Card.Body>
-          <Text fontSize="sm" color="fg.muted">
+          <Text fontSize="sm" color="gray.400">
             Fleet summary:{" "}
-            <Text as="span" fontWeight="semibold" color="fg">
+            <Text as="span" fontWeight="semibold" color="gray.100">
               <FormatNumber value={kpis.activeVehicles + kpis.availableVehicles} />{" "}
               total vehicles
             </Text>
             ,{" "}
-            <Text as="span" fontWeight="semibold" color="fg">
+            <Text as="span" fontWeight="semibold" color="gray.100">
               <FormatNumber value={kpis.activeTrips + kpis.pendingTrips} /> trips
             </Text>{" "}
             in pipeline,{" "}
-            <Text as="span" fontWeight="semibold" color="fg">
+            <Text as="span" fontWeight="semibold" color="blue.300">
               <FormatNumber value={kpis.fleetUtilization} />%
             </Text>{" "}
             utilization rate.

@@ -6,10 +6,10 @@ interface LoadingStateProps {
 
 export function LoadingState({ message = "Loading..." }: LoadingStateProps) {
   return (
-    <Center py="16" px="6">
+    <Center py="16" px="6" bg="gray.900">
       <VStack gap="4">
-        <Spinner size="lg" color="blue.500" />
-        <Text fontSize="sm" color="fg.muted">
+        <Spinner size="lg" color="blue.400" />
+        <Text fontSize="sm" color="gray.400">
           {message}
         </Text>
       </VStack>

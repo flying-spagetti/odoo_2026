@@ -41,6 +41,30 @@ export type CompleteTripInput = {
   finalOdometerKm?: number;
 };
 
+export type CreateTripInput = {
+  source: string;
+  destination: string;
+  cargoWeightKg: number;
+  plannedDistanceKm: number;
+  vehicleId: string;
+  driverId: string;
+};
+
+export type TripVehicleOption = {
+  id: string;
+  name: string;
+  registrationNumber: string;
+  maxLoadKg: number;
+  odometerKm: number;
+};
+
+export type TripDriverOption = {
+  id: string;
+  name: string;
+  licenseNumber: string;
+  licenseExpiryDate: string;
+};
+
 export type TripFailureDetails = {
   readiness?: DispatchReadiness;
 };
@@ -49,6 +73,8 @@ export type TripFailureCode =
   | "TRIP_NOT_FOUND"
   | "INVALID_TRIP_STATE"
   | "DISPATCH_BLOCKED"
+  | "VEHICLE_NOT_FOUND"
+  | "DRIVER_NOT_FOUND"
   | "VEHICLE_UNAVAILABLE"
   | "DRIVER_UNAVAILABLE"
   | "INVALID_ODOMETER"
