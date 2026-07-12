@@ -18,6 +18,7 @@ const OPERATIONAL_ROLES: Role[] = [
 ];
 
 const TRIP_MUTATION_ROLES: Role[] = [Role.FLEET_MANAGER, Role.DISPATCHER];
+const FLEET_MANAGER_ROLE = Role.FLEET_MANAGER;
 
 async function resolveActingUser(): Promise<ActingUser | null> {
   const session = await auth.api.getSession({
@@ -71,6 +72,19 @@ export async function requireTripMutationRole(): Promise<ActingUser> {
     throw new TripDomainError(
       "FORBIDDEN",
       "You do not have permission to modify trips.",
+    );
+  }
+
+  return user;
+}
+
+export async function requireFleetManagerRole(): Promise<ActingUser> {
+  const user = await requireAuthenticatedUser();
+
+  if (user.role !== FLEET_MANAGER_ROLE) {
+    throw new TripDomainError(
+      "FORBIDDEN",
+      "You do not have permission to perform this action.",
     );
   }
 

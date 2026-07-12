@@ -13,6 +13,7 @@
     "db:seed": "prisma db seed",
     "db:seed-auth": "tsx prisma/seed-auth.ts",
     "db:verify-auth": "tsx prisma/verify-auth.ts",
+    "db:verify-maintenance": "tsx prisma/verify-maintenance.ts",
     "db:studio": "prisma studio"
   },
   "prisma": {
