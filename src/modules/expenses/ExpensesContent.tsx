@@ -46,6 +46,12 @@ export function ExpensesContent() {
           suffix="INR"
           description="All operational expenses"
         />
+        <KpiCard
+          label="Total Other Cost"
+          value={summary.totalOtherCost}
+          suffix="INR"
+          description="Other expenses"
+        />
       </Grid>
 
       <Card.Root variant="outline">

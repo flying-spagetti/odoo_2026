@@ -19,4 +19,5 @@ export interface ExpenseSummary {
   totalFuelCost: number;
   totalMaintenanceCost: number;
   totalOperationalCost: number;
+  totalOtherCost: number;
 }
