@@ -1,17 +1,10 @@
-"use client";
-
-import { PageContainer } from "@/components/layout/PageContainer";
-import { PlaceholderPage } from "@/modules/shared/PlaceholderPage";
-import { LuSettings } from "react-icons/lu";
+import { Box } from "@chakra-ui/react";
+import { SettingsContent } from "@/modules/settings/SettingsContent";
 
 export default function SettingsPage() {
   return (
-    <PageContainer>
-      <PlaceholderPage
-        icon={LuSettings}
-        title="Settings coming soon"
-        description="Application settings and preferences will be available in a future release."
-      />
-    </PageContainer>
+    <Box px={{ base: "4", md: "6" }} py={{ base: "5", md: "6" }}>
+      <SettingsContent />
+    </Box>
   );
 }
