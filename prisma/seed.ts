@@ -13,6 +13,9 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
 const SEED_TRIP_ID = "seed-trip-draft";
+const SEED_TRIP_BLOCKED_ID = "seed-trip-blocked";
+const SEED_TRIP_DISPATCHED_ID = "seed-trip-dispatched";
+const SEED_TRIP_CANCELLED_ID = "seed-trip-cancelled";
 const SEED_MAINTENANCE_ID = "seed-maint-truck09";
 const SEED_FUEL_LOG_ID = "seed-fuel-van05";
 const SEED_EXPENSE_ID = "seed-expense-toll";
@@ -79,7 +82,7 @@ async function main() {
       },
     });
 
-    await prisma.vehicle.upsert({
+    const mini21 = await prisma.vehicle.upsert({
       where: { registrationNumber: "AP39MN2121" },
       update: {
         name: "Mini-21",
@@ -150,7 +153,7 @@ async function main() {
       },
     });
 
-    await prisma.driver.upsert({
+    const raviSharma = await prisma.driver.upsert({
       where: { licenseNumber: "AP-DL-2018-009871" },
       update: {
         name: "Ravi Sharma",
@@ -192,7 +195,7 @@ async function main() {
       },
     });
 
-    await prisma.driver.upsert({
+    const arjunNaidu = await prisma.driver.upsert({
       where: { licenseNumber: "AP-DL-2019-007890" },
       update: {
         name: "Arjun Naidu",
@@ -216,23 +219,116 @@ async function main() {
     await prisma.trip.upsert({
       where: { id: SEED_TRIP_ID },
       update: {
-        source: "Hyderabad Warehouse",
-        destination: "Vijayawada Depot",
+        source: "Gandhinagar Depot",
+        destination: "Ahmedabad Hub",
         cargoWeightKg: 420,
-        plannedDistanceKm: 275,
+        plannedDistanceKm: 38,
+        status: TripStatus.DRAFT,
+        vehicleId: van05.id,
+        driverId: alexKumar.id,
+        dispatchedAt: null,
+        completedAt: null,
+        cancelledAt: null,
+      },
+      create: {
+        id: SEED_TRIP_ID,
+        source: "Gandhinagar Depot",
+        destination: "Ahmedabad Hub",
+        cargoWeightKg: 420,
+        plannedDistanceKm: 38,
         status: TripStatus.DRAFT,
         vehicleId: van05.id,
         driverId: alexKumar.id,
       },
-      create: {
-        id: SEED_TRIP_ID,
-        source: "Hyderabad Warehouse",
-        destination: "Vijayawada Depot",
-        cargoWeightKg: 420,
-        plannedDistanceKm: 275,
+    });
+
+    await prisma.trip.upsert({
+      where: { id: SEED_TRIP_BLOCKED_ID },
+      update: {
+        source: "Gandhinagar Depot",
+        destination: "Ahmedabad Hub",
+        cargoWeightKg: 700,
+        plannedDistanceKm: 38,
         status: TripStatus.DRAFT,
         vehicleId: van05.id,
         driverId: alexKumar.id,
+        dispatchedAt: null,
+        completedAt: null,
+        cancelledAt: null,
+      },
+      create: {
+        id: SEED_TRIP_BLOCKED_ID,
+        source: "Gandhinagar Depot",
+        destination: "Ahmedabad Hub",
+        cargoWeightKg: 700,
+        plannedDistanceKm: 38,
+        status: TripStatus.DRAFT,
+        vehicleId: van05.id,
+        driverId: alexKumar.id,
+      },
+    });
+
+    await prisma.vehicle.update({
+      where: { id: mini21.id },
+      data: { status: VehicleStatus.ON_TRIP },
+    });
+
+    await prisma.driver.update({
+      where: { id: raviSharma.id },
+      data: { status: DriverStatus.ON_TRIP },
+    });
+
+    await prisma.trip.upsert({
+      where: { id: SEED_TRIP_DISPATCHED_ID },
+      update: {
+        source: "Vatva Industrial Estate",
+        destination: "Surat Logistics Park",
+        cargoWeightKg: 280,
+        plannedDistanceKm: 265,
+        status: TripStatus.DISPATCHED,
+        vehicleId: mini21.id,
+        driverId: raviSharma.id,
+        dispatchedAt: new Date("2026-07-12T06:30:00.000Z"),
+        completedAt: null,
+        cancelledAt: null,
+      },
+      create: {
+        id: SEED_TRIP_DISPATCHED_ID,
+        source: "Vatva Industrial Estate",
+        destination: "Surat Logistics Park",
+        cargoWeightKg: 280,
+        plannedDistanceKm: 265,
+        status: TripStatus.DISPATCHED,
+        vehicleId: mini21.id,
+        driverId: raviSharma.id,
+        dispatchedAt: new Date("2026-07-12T06:30:00.000Z"),
+      },
+    });
+
+    await prisma.trip.upsert({
+      where: { id: SEED_TRIP_CANCELLED_ID },
+      update: {
+        source: "Mansa",
+        destination: "Kalol Depot",
+        cargoWeightKg: 600,
+        plannedDistanceKm: 52,
+        status: TripStatus.CANCELLED,
+        vehicleId: truck09.id,
+        driverId: arjunNaidu.id,
+        dispatchedAt: null,
+        completedAt: null,
+        cancelledAt: new Date("2026-07-11T14:20:00.000Z"),
+      },
+      create: {
+        id: SEED_TRIP_CANCELLED_ID,
+        source: "Mansa",
+        destination: "Kalol Depot",
+        cargoWeightKg: 600,
+        plannedDistanceKm: 52,
+        status: TripStatus.CANCELLED,
+        vehicleId: truck09.id,
+        driverId: arjunNaidu.id,
+        cancelledAt: new Date("2026-07-11T14:20:00.000Z"),
       },
     });
 
@@ -297,7 +393,7 @@ async function main() {
       },
     });
 
-    console.log("Seeded 4 vehicles, 4 drivers, and operational records.");
+    console.log("Seeded 4 vehicles, 4 drivers, and 4 trips for the live board.");
     console.log("Run `npm run db:seed-auth` to provision Better Auth demo accounts.");
   } finally {
     await prisma.$disconnect();

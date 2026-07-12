@@ -1,6 +1,8 @@
 "use server";
 
+import { Role } from "@/generated/prisma/client";
 import {
+  getActingUser,
   requireAuthenticatedOperationalUser,
   requireTripMutationRole,
 } from "@/lib/auth/acting-user";
@@ -11,11 +13,15 @@ import {
   completeTrip,
   dispatchTrip,
   getDispatchReadiness,
+  getTripDetail,
+  listLiveBoardTrips,
 } from "./trip.service";
 import type {
   CompleteTripInput,
   DispatchReadiness,
   TripActionResult,
+  TripBoardItem,
+  TripDetailView,
 } from "./trip.types";
 
 async function runTripAction<T>(
@@ -27,6 +33,32 @@ async function runTripAction<T>(
   } catch (error) {
     return { success: false, error: toTripFailure(error) };
   }
+}
+
+export async function listLiveBoardTripsAction(): Promise<
+  TripActionResult<TripBoardItem[]>
+> {
+  return runTripAction(async () => {
+    await requireAuthenticatedOperationalUser();
+    return listLiveBoardTrips();
+  });
+}
+
+export async function getTripDetailAction(
+  tripId: string,
+): Promise<TripActionResult<TripDetailView>> {
+  return runTripAction(async () => {
+    await requireAuthenticatedOperationalUser();
+    return getTripDetail(tripId);
+  });
+}
+
+export async function canMutateTripsAction(): Promise<boolean> {
+  const user = await getActingUser();
+  return (
+    user !== null &&
+    (user.role === Role.FLEET_MANAGER || user.role === Role.DISPATCHER)
+  );
 }
 
 export async function getDispatchReadinessAction(

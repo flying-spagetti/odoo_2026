@@ -3,7 +3,18 @@ import { prisma } from "@/lib/db";
 import { evaluateDispatchReadiness, markCheckFailed } from "./trip-readiness";
 import { TripDomainError } from "./trip.errors";
 import { completeTripInputSchema } from "./trip.schema";
-import type { CompleteTripInput, DispatchReadiness } from "./trip.types";
+import { toTripBoardItem, toTripDetailView } from "./trip.mapper";
+import type {
+  CompleteTripInput,
+  DispatchReadiness,
+  TripBoardItem,
+  TripDetailView,
+} from "./trip.types";
+
+const tripWithRelationsInclude = {
+  vehicle: true,
+  driver: true,
+} as const;
 
 async function findOtherDispatchedTrip(
   vehicleId: string,
@@ -33,6 +44,28 @@ async function findOtherDispatchedTrip(
     vehicleDispatchedElsewhere: vehicleTrip !== null,
     driverDispatchedElsewhere: driverTrip !== null,
   };
+}
+
+export async function listLiveBoardTrips(): Promise<TripBoardItem[]> {
+  const trips = await prisma.trip.findMany({
+    include: tripWithRelationsInclude,
+    orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+  });
+
+  return trips.map(toTripBoardItem);
+}
+
+export async function getTripDetail(tripId: string): Promise<TripDetailView> {
+  const trip = await prisma.trip.findUnique({
+    where: { id: tripId },
+    include: tripWithRelationsInclude,
+  });
+
+  if (!trip) {
+    throw new TripDomainError("TRIP_NOT_FOUND", `Trip ${tripId} was not found.`);
+  }
+
+  return toTripDetailView(trip);
 }
 
 export async function getDispatchReadiness(
