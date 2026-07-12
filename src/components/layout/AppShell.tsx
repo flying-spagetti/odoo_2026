@@ -10,11 +10,11 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   return (
-    <Flex minH="100vh" bg="bg.muted">
+    <Flex minH="100vh" bg="gray.950">
       <Sidebar />
       <Flex direction="column" flex="1" minW="0">
         <TopHeader />
-        <Box as="main" flex="1" overflow="auto">
+        <Box as="main" flex="1" overflow="auto" bg="gray.950">
           {children}
         </Box>
       </Flex>

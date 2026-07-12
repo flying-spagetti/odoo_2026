@@ -16,16 +16,16 @@ export function Sidebar() {
       flexDirection="column"
       w="64"
       flexShrink={0}
-      bg="bg"
+      bg="gray.950"
       borderRightWidth="1px"
-      borderColor="border.muted"
+      borderColor="gray.800"
       position="sticky"
       top="0"
       h="100vh"
       overflowY="auto"
     >
-      <Flex align="center" h="16" px="5" borderBottomWidth="1px" borderColor="border.muted">
-        <Heading size="md" color="blue.600" letterSpacing="tight">
+      <Flex align="center" h="16" px="5" borderBottomWidth="1px" borderColor="gray.800">
+        <Heading size="md" color="gray.100" letterSpacing="tight">
           TransitOps
         </Heading>
       </Flex>
@@ -45,11 +45,13 @@ export function Sidebar() {
                 borderRadius="md"
                 fontSize="sm"
                 fontWeight={isActive ? "semibold" : "medium"}
-                color={isActive ? "blue.700" : "fg.muted"}
-                bg={isActive ? "blue.50" : "transparent"}
+                color={isActive ? "orange.300" : "gray.400"}
+                bg={isActive ? "gray.900" : "transparent"}
+                borderWidth={isActive ? "1px" : "0"}
+                borderColor={isActive ? "orange.500" : "transparent"}
                 _hover={{
-                  bg: isActive ? "blue.50" : "bg.muted",
-                  color: isActive ? "blue.700" : "fg",
+                  bg: "gray.900",
+                  color: isActive ? "orange.300" : "gray.200",
                 }}
                 transition="background 0.15s, color 0.15s"
               >
@@ -60,12 +62,6 @@ export function Sidebar() {
           );
         })}
       </VStack>
-
-      <Box px="5" py="4" borderTopWidth="1px" borderColor="border.muted">
-        <Text fontSize="xs" color="fg.subtle">
-          Transport Operations
-        </Text>
-      </Box>
     </Box>
   );
 }

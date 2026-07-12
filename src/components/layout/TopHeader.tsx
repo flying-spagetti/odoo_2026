@@ -1,9 +1,9 @@
 "use client";
 
-import { Box, Flex, Heading, IconButton, Text } from "@chakra-ui/react";
+import { Box, Flex, IconButton, Input, InputGroup } from "@chakra-ui/react";
 import { useState } from "react";
-import { LuMenu } from "react-icons/lu";
-import { ColorModeButton } from "@/components/ui/color-mode";
+import { LuMenu, LuSearch } from "react-icons/lu";
+import { UserProfile } from "@/components/shared/UserProfile";
 import { MobileNav } from "./MobileNav";
 
 export function TopHeader() {
@@ -16,41 +16,43 @@ export function TopHeader() {
         position="sticky"
         top="0"
         zIndex="docked"
-        bg="bg"
+        bg="gray.950"
         borderBottomWidth="1px"
-        borderColor="border.muted"
+        borderColor="gray.800"
         h="16"
         px={{ base: "4", md: "6" }}
       >
         <Flex align="center" justify="space-between" h="full" gap="4">
-          <Flex align="center" gap="3" minW="0">
+          <Flex align="center" gap="3" flex="1" minW="0">
             <IconButton
               aria-label="Open navigation menu"
               display={{ base: "inline-flex", md: "none" }}
               variant="ghost"
               size="sm"
+              color="gray.300"
               onClick={() => setMobileNavOpen(true)}
             >
               <LuMenu />
             </IconButton>
-            <Box display={{ base: "block", md: "none" }} minW="0">
-              <Heading size="sm" color="blue.600" truncate>
-                TransitOps
-              </Heading>
-            </Box>
-            <Text
-              display={{ base: "none", md: "block" }}
-              fontSize="sm"
-              color="fg.muted"
-              truncate
+
+            <InputGroup
+              maxW={{ base: "full", md: "sm" }}
+              flex="1"
+              startElement={<LuSearch color="var(--chakra-colors-gray-500)" />}
             >
-              Fleet operations control
-            </Text>
+              <Input
+                placeholder="Search..."
+                size="sm"
+                bg="gray.900"
+                borderColor="gray.700"
+                color="gray.100"
+                _placeholder={{ color: "gray.500" }}
+                aria-label="Search"
+              />
+            </InputGroup>
           </Flex>
 
-          <Flex align="center" gap="2">
-            <ColorModeButton />
-          </Flex>
+          <UserProfile />
         </Flex>
       </Box>
 
