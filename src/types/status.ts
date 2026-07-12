@@ -19,10 +19,22 @@ export const TRIP_STATUSES = [
   "CANCELLED",
 ] as const;
 
+export const MAINTENANCE_STATUSES = [
+  "OPEN",
+  "IN_PROGRESS",
+  "CLOSED",
+  "CANCELLED",
+] as const;
+
 export type VehicleStatus = (typeof VEHICLE_STATUSES)[number];
 export type DriverStatus = (typeof DRIVER_STATUSES)[number];
 export type TripStatus = (typeof TRIP_STATUSES)[number];
-export type OperationalStatus = VehicleStatus | DriverStatus | TripStatus;
+export type MaintenanceStatus = (typeof MAINTENANCE_STATUSES)[number];
+export type OperationalStatus =
+  | VehicleStatus
+  | DriverStatus
+  | TripStatus
+  | MaintenanceStatus;
 
 export type StatusColorPalette = "green" | "blue" | "orange" | "red" | "gray";
 
@@ -42,6 +54,13 @@ export const STATUS_CONFIG: Record<string, StatusConfig> = {
   DISPATCHED: { label: "Dispatched", colorPalette: "blue" },
   COMPLETED: { label: "Completed", colorPalette: "green" },
   CANCELLED: { label: "Cancelled", colorPalette: "red" },
+  OPEN: { label: "Open", colorPalette: "blue" },
+  IN_PROGRESS: { label: "In Progress", colorPalette: "orange" },
+  CLOSED: { label: "Closed", colorPalette: "green" },
+  LOW: { label: "Low", colorPalette: "gray" },
+  MEDIUM: { label: "Medium", colorPalette: "blue" },
+  HIGH: { label: "High", colorPalette: "orange" },
+  CRITICAL: { label: "Critical", colorPalette: "red" },
 };
 
 export function getStatusConfig(status: string): StatusConfig {
