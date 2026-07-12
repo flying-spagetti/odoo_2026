@@ -2,16 +2,35 @@
 
 import type { IconButtonProps, SpanProps } from "@chakra-ui/react"
 import { ClientOnly, IconButton, Skeleton, Span } from "@chakra-ui/react"
-import { ThemeProvider, useTheme } from "next-themes"
-import type { ThemeProviderProps } from "next-themes"
 import * as React from "react"
 import { LuMoon, LuSun } from "react-icons/lu"
 
-export interface ColorModeProviderProps extends ThemeProviderProps {}
+export interface ColorModeProviderProps {
+  children?: React.ReactNode
+  defaultTheme?: string
+}
 
-export function ColorModeProvider(props: ColorModeProviderProps) {
+const ColorModeContext = React.createContext<UseColorModeReturn>({
+  colorMode: "light",
+  setColorMode: () => undefined,
+  toggleColorMode: () => undefined,
+})
+
+export function ColorModeProvider({
+  children,
+  defaultTheme = "light",
+}: ColorModeProviderProps) {
+  const value = React.useMemo<UseColorModeReturn>(
+    () => ({
+      colorMode: defaultTheme === "dark" ? "dark" : "light",
+      setColorMode: () => undefined,
+      toggleColorMode: () => undefined,
+    }),
+    [defaultTheme],
+  )
+
   return (
-    <ThemeProvider attribute="class" disableTransitionOnChange {...props} />
+    <ColorModeContext.Provider value={value}>{children}</ColorModeContext.Provider>
   )
 }
 
@@ -24,16 +43,7 @@ export interface UseColorModeReturn {
 }
 
 export function useColorMode(): UseColorModeReturn {
-  const { resolvedTheme, setTheme, forcedTheme } = useTheme()
-  const colorMode = forcedTheme || resolvedTheme
-  const toggleColorMode = () => {
-    setTheme(resolvedTheme === "dark" ? "light" : "dark")
-  }
-  return {
-    colorMode: colorMode as ColorMode,
-    setColorMode: setTheme,
-    toggleColorMode,
-  }
+  return React.useContext(ColorModeContext)
 }
 
 export function useColorModeValue<T>(light: T, dark: T) {

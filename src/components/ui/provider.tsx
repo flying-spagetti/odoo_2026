@@ -7,9 +7,11 @@ import {
 } from "./color-mode"
 
 export function Provider(props: ColorModeProviderProps) {
+  const { children, ...colorModeProps } = props
+
   return (
     <ChakraProvider value={defaultSystem}>
-      <ColorModeProvider {...props} />
+      <ColorModeProvider {...colorModeProps}>{children}</ColorModeProvider>
     </ChakraProvider>
   )
 }
