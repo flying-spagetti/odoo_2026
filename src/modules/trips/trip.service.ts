@@ -1,6 +1,6 @@
 import { DriverStatus, TripStatus, VehicleStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
-import { evaluateDispatchReadiness } from "./trip-readiness";
+import { evaluateDispatchReadiness, markCheckFailed } from "./trip-readiness";
 import { TripDomainError } from "./trip.errors";
 import { completeTripInputSchema } from "./trip.schema";
 import type { CompleteTripInput, DispatchReadiness } from "./trip.types";
@@ -124,6 +124,7 @@ export async function dispatchTrip(tripId: string): Promise<void> {
       throw new TripDomainError(
         "DISPATCH_BLOCKED",
         `Dispatch blocked: ${failedChecks}`,
+        { readiness },
       );
     }
 
@@ -138,7 +139,14 @@ export async function dispatchTrip(tripId: string): Promise<void> {
     if (vehicleClaim.count !== 1) {
       throw new TripDomainError(
         "VEHICLE_UNAVAILABLE",
-        "Vehicle is no longer available for dispatch.",
+        "The selected vehicle was claimed by another trip.",
+        {
+          readiness: markCheckFailed(
+            readiness,
+            "VEHICLE_AVAILABLE",
+            "The vehicle is no longer available.",
+          ),
+        },
       );
     }
 
@@ -153,7 +161,14 @@ export async function dispatchTrip(tripId: string): Promise<void> {
     if (driverClaim.count !== 1) {
       throw new TripDomainError(
         "DRIVER_UNAVAILABLE",
-        "Driver is no longer available for dispatch.",
+        "The selected driver was claimed by another trip.",
+        {
+          readiness: markCheckFailed(
+            readiness,
+            "DRIVER_AVAILABLE",
+            "The driver is no longer available.",
+          ),
+        },
       );
     }
 
