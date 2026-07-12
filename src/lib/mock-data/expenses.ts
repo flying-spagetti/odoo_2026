@@ -1,85 +1,55 @@
-import type {
-  ExpenseSummary,
-  FuelLog,
-  OperationalExpense,
-} from "@/types/expense";
-
-export const MOCK_EXPENSE_SUMMARY: ExpenseSummary = {
-  totalFuelCost: 284500,
-  totalMaintenanceCost: 156200,
-  totalOtherCost:74000,
-  totalOperationalCost: 514700,
-};
+import type { ExpenseSummary, FuelLog, TripExpense } from "@/types/expense";
 
 export const MOCK_FUEL_LOGS: FuelLog[] = [
   {
     id: "f1",
-    date: "2026-07-11",
-    vehicleRegistration: "MH-12-AB-4521",
-    litres: 180,
-    cost: 16200,
-    odometerKm: 145100,
+    vehicleName: "VAN-05",
+    date: "2026-07-05",
+    litres: 42,
+    fuelCost: 3150,
   },
   {
     id: "f2",
-    date: "2026-07-10",
-    vehicleRegistration: "DL-01-CD-8834",
-    litres: 150,
-    cost: 13500,
-    odometerKm: 98100,
+    vehicleName: "TRUCK-11",
+    date: "2026-07-06",
+    litres: 110,
+    fuelCost: 8400,
   },
   {
     id: "f3",
-    date: "2026-07-09",
-    vehicleRegistration: "UP-32-MN-1188",
-    litres: 220,
-    cost: 19800,
-    odometerKm: 88800,
-  },
-  {
-    id: "f4",
-    date: "2026-07-08",
-    vehicleRegistration: "GJ-06-IJ-3344",
-    litres: 165,
-    cost: 14850,
-    odometerKm: 178700,
+    vehicleName: "MINI-08",
+    date: "2026-07-06",
+    litres: 28,
+    fuelCost: 2050,
   },
 ];
 
-export const MOCK_OPERATIONAL_EXPENSES: OperationalExpense[] = [
+export const MOCK_TRIP_EXPENSES: TripExpense[] = [
   {
     id: "e1",
-    date: "2026-07-11",
-    category: "Maintenance",
-    description: "Brake pad replacement — KA-05-EF-2210",
-    amount: 12500,
+    tripCode: "TR001",
+    vehicleName: "VAN-05",
+    toll: 120,
+    other: 0,
+    maintenanceLinked: 0,
+    status: "AVAILABLE",
   },
   {
     id: "e2",
-    date: "2026-07-10",
-    category: "Toll",
-    description: "Mumbai-Pune expressway toll",
-    amount: 3200,
-  },
-  {
-    id: "e3",
-    date: "2026-07-09",
-    category: "Maintenance",
-    description: "Engine oil change — DL-01-CD-8834",
-    amount: 4800,
-  },
-  {
-    id: "e4",
-    date: "2026-07-08",
-    category: "Insurance",
-    description: "Quarterly fleet insurance premium",
-    amount: 45000,
-  },
-  {
-    id: "e5",
-    date: "2026-07-07",
-    category: "Permit",
-    description: "Interstate transport permit renewal",
-    amount: 8500,
+    tripCode: "TR002",
+    vehicleName: "TRK-12",
+    toll: 340,
+    other: 150,
+    maintenanceLinked: 18000,
+    status: "COMPLETED",
   },
 ];
+
+export const MOCK_EXPENSE_SUMMARY: ExpenseSummary = {
+  totalFuelCost: MOCK_FUEL_LOGS.reduce((sum, log) => sum + log.fuelCost, 0),
+  totalMaintenanceCost: MOCK_TRIP_EXPENSES.reduce(
+    (sum, expense) => sum + expense.maintenanceLinked,
+    0,
+  ),
+  totalOperationalCost: 34070,
+};

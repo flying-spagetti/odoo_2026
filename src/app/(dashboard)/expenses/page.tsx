@@ -1,15 +1,10 @@
-import { PageContainer } from "@/components/layout/PageContainer";
-import { PageHeader } from "@/components/shared/PageHeader";
+import { Box } from "@chakra-ui/react";
 import { ExpensesContent } from "@/modules/expenses/ExpensesContent";
 
 export default function ExpensesPage() {
   return (
-    <PageContainer>
-      <PageHeader
-        title="Fuel & Expenses"
-        description="Track fuel consumption and operational expenditure"
-      />
+    <Box px={{ base: "4", md: "6" }} py={{ base: "5", md: "6" }}>
       <ExpensesContent />
-    </PageContainer>
+    </Box>
   );
 }
