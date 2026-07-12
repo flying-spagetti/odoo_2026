@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  FLEET_MANAGER
+  DISPATCHER
+  SAFETY_OFFICER
+  FINANCIAL_ANALYST
+}
+
+enum VehicleStatus {
+  AVAILABLE
+  ON_TRIP
+  IN_SHOP
+  RETIRED
+}
+
+enum VehicleType {
+  TRUCK
+  VAN
+  BUS
+  TRAILER
+}
+
+enum DriverStatus {
+  AVAILABLE
+  ON_TRIP
+  OFF_DUTY
+  SUSPENDED
+}
+
+enum TripStatus {
+  DRAFT
+  DISPATCHED
+  COMPLETED
+  CANCELLED
+}
+
+enum MaintenanceStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+  CANCELLED
+}
+
+enum ExpenseType {
+  TOLL
+  PARKING
+  REPAIR
+  OTHER
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Vehicle {
+  id                   String        @id @default(cuid())
+  registrationNumber   String        @unique
+  name                 String
+  model                String
+  type                 VehicleType
+  maxLoadKg            Int
+  odometerKm           Int
+  acquisitionCostPaise Int
+  status               VehicleStatus
+  region               String?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  trips              Trip[]
+  maintenanceRecords MaintenanceRecord[]
+  fuelLogs           FuelLog[]
+  expenses           Expense[]
+
+  @@index([status])
+}
+
+model Driver {
+  id                String       @id @default(cuid())
+  name              String
+  licenseNumber     String       @unique
+  licenseCategory   String
+  licenseExpiryDate DateTime
+  contactNumber     String
+  safetyScore       Int
+  status            DriverStatus
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  trips Trip[]
+
+  @@index([status])
+  @@index([licenseExpiryDate])
+}
+
+model Trip {
+  id                String     @id @default(cuid())
+  source            String
+  destination       String
+  cargoWeightKg     Int
+  plannedDistanceKm Int
+  finalOdometerKm   Int?
+  revenuePaise      Int?
+  status            TripStatus
+  vehicleId         String
+  driverId          String
+  dispatchedAt      DateTime?
+  completedAt       DateTime?
+  cancelledAt       DateTime?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  vehicle  Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  driver   Driver    @relation(fields: [driverId], references: [id], onDelete: Restrict)
+  fuelLogs FuelLog[]
+  expenses Expense[]
+
+  @@index([status])
+  @@index([vehicleId])
+  @@index([driverId])
+  @@index([createdAt])
+}
+
+model MaintenanceRecord {
+  id                 String            @id @default(cuid())
+  vehicleId          String
+  title              String
+  description        String
+  priority           String
+  status             MaintenanceStatus
+  estimatedCostPaise Int?
+  actualCostPaise    Int?
+  startedAt          DateTime?
+  completedAt        DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+
+  @@index([vehicleId])
+  @@index([status])
+}
+
+model FuelLog {
+  id         String   @id @default(cuid())
+  vehicleId  String
+  tripId     String?
+  liters     Float
+  costPaise  Int
+  odometerKm Int
+  loggedAt   DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  trip    Trip?   @relation(fields: [tripId], references: [id], onDelete: SetNull)
+
+  @@index([vehicleId])
+  @@index([loggedAt])
+}
+
+model Expense {
+  id          String      @id @default(cuid())
+  vehicleId   String
+  tripId      String?
+  type        ExpenseType
+  description String
+  amountPaise Int
+  incurredAt  DateTime
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  trip    Trip?   @relation(fields: [tripId], references: [id], onDelete: SetNull)
+
+  @@index([vehicleId])
+  @@index([incurredAt])
+  @@index([type])
+}
