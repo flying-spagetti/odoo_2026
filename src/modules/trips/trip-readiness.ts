@@ -4,7 +4,26 @@ import {
   VehicleStatus,
 } from "@/generated/prisma/client";
 import { startOfDay } from "date-fns";
-import type { DispatchReadiness, DispatchReadinessFacts } from "./trip.types";
+import type {
+  DispatchReadiness,
+  DispatchReadinessFacts,
+  ReadinessCheckCode,
+} from "./trip.types";
+
+export function markCheckFailed(
+  readiness: DispatchReadiness,
+  code: ReadinessCheckCode,
+  reason: string,
+): DispatchReadiness {
+  const checks = readiness.checks.map((check) =>
+    check.code === code ? { ...check, passed: false, reason } : check,
+  );
+
+  return {
+    ready: false,
+    checks,
+  };
+}
 
 function vehicleStatusReason(status: VehicleStatus): string {
   switch (status) {

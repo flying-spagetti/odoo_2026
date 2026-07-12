@@ -4,8 +4,17 @@ import type {
   VehicleStatus,
 } from "@/generated/prisma/client";
 
+export type ReadinessCheckCode =
+  | "TRIP_DRAFT"
+  | "VEHICLE_AVAILABLE"
+  | "DRIVER_AVAILABLE"
+  | "DRIVER_LICENCE_VALID"
+  | "CARGO_CAPACITY"
+  | "VEHICLE_NOT_DISPATCHED_ELSEWHERE"
+  | "DRIVER_NOT_DISPATCHED_ELSEWHERE";
+
 export type ReadinessCheck = {
-  code: string;
+  code: ReadinessCheckCode;
   label: string;
   passed: boolean;
   reason?: string;
@@ -31,3 +40,37 @@ export type DispatchReadinessFacts = {
 export type CompleteTripInput = {
   finalOdometerKm?: number;
 };
+
+export type TripFailureDetails = {
+  readiness?: DispatchReadiness;
+};
+
+export type TripFailureCode =
+  | "TRIP_NOT_FOUND"
+  | "INVALID_TRIP_STATE"
+  | "DISPATCH_BLOCKED"
+  | "VEHICLE_UNAVAILABLE"
+  | "DRIVER_UNAVAILABLE"
+  | "INVALID_ODOMETER"
+  | "VALIDATION_ERROR"
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
+  | "UNKNOWN_ERROR";
+
+export type TripFailure = {
+  code: TripFailureCode;
+  message: string;
+  details?: TripFailureDetails;
+};
+
+export type TripActionSuccess<T> = {
+  success: true;
+  data: T;
+};
+
+export type TripActionFailure = {
+  success: false;
+  error: TripFailure;
+};
+
+export type TripActionResult<T> = TripActionSuccess<T> | TripActionFailure;
