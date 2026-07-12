@@ -1,60 +1,55 @@
-import { Box, Flex, Heading, List, Text, VStack } from "@chakra-ui/react";
-import { LuLayoutGrid } from "react-icons/lu";
+"use client";
+
+import { Box, Flex, Heading, Text, VStack } from "@chakra-ui/react";
 import { Icon } from "@chakra-ui/react";
-import { ROLE_OPTIONS } from "@/lib/auth/role-config";
+import { LuTruck } from "react-icons/lu";
 
 export function LoginBrandingPanel() {
   return (
     <Flex
       direction="column"
       justify="space-between"
-      bg="gray.100"
-      color="gray.800"
+      bg="gray.50"
+      borderRightWidth={{ md: "1px" }}
+      borderColor="gray.200"
       px={{ base: "6", md: "10", lg: "12" }}
       py={{ base: "8", md: "10" }}
       minH={{ base: "auto", md: "100vh" }}
       flex="1"
     >
-      <VStack align="stretch" gap="8">
+      <VStack align="stretch" gap="6">
         <Flex align="center" gap="3">
           <Flex
             align="center"
             justify="center"
             boxSize="10"
-            bg="orange.500"
+            bg="blue.600"
             borderRadius="md"
             color="white"
             flexShrink={0}
           >
-            <Icon as={LuLayoutGrid} boxSize="5" />
+            <Icon as={LuTruck} boxSize="5" aria-hidden />
           </Flex>
           <Box>
-            <Heading size="lg" letterSpacing="tight">
+            <Heading size="lg" letterSpacing="tight" color="gray.900">
               TransitOps
             </Heading>
             <Text fontSize="sm" color="gray.600">
-              Smart Transport Operations Platform
+              Transport operations platform
             </Text>
           </Box>
         </Flex>
 
-        <Box>
-          <Text fontWeight="semibold" mb="3">
-            One login, four roles:
+        <Box maxW="sm">
+          <Text fontSize="sm" color="gray.700" lineHeight="1.6">
+            Sign in to manage fleet resources, dispatch trips, and monitor
+            operational activity across your transport network.
           </Text>
-          <List.Root gap="2" variant="plain">
-            {ROLE_OPTIONS.map((role) => (
-              <List.Item key={role.value} display="flex" alignItems="center" gap="2">
-                <Box boxSize="2" borderRadius="full" bg="orange.500" flexShrink={0} />
-                <Text fontSize="sm">{role.label}</Text>
-              </List.Item>
-            ))}
-          </List.Root>
         </Box>
       </VStack>
 
       <Text fontSize="xs" color="gray.500" mt="8">
-        TRANSITOPS © 2026 · RBAC ENABLED
+        TransitOps © 2026
       </Text>
     </Flex>
   );
