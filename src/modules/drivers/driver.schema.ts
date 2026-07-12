@@ -18,7 +18,6 @@ export const createDriverInputSchema = z.object({
   licenseCategory: z.enum(LICENSE_CATEGORIES),
   licenseExpiryDate: isoDateSchema,
   contactNumber: trimmedNonEmptyString.max(32),
-  safetyScore: z.number().int().min(0).max(100),
 });
 
 export type CreateDriverInputSchema = z.infer<typeof createDriverInputSchema>;

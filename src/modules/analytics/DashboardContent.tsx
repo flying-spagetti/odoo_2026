@@ -1,6 +1,13 @@
 "use client";
 
-import { Card, FormatNumber, Grid, HStack, Text, VStack } from "@chakra-ui/react";
+import {
+  Card,
+  FormatNumber,
+  Grid,
+  HStack,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
 import { format } from "date-fns";
 import {
   LuActivity,
@@ -9,15 +16,31 @@ import {
   LuUser,
   LuWrench,
 } from "react-icons/lu";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { ErrorState } from "@/components/shared/ErrorState";
 import { KpiCard } from "@/components/shared/KpiCard";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import {
-  MOCK_DASHBOARD_KPIS,
-  MOCK_FLEET_ACTIVITY,
-} from "@/lib/mock-data/dashboard";
+import type { DashboardOverview } from "./dashboard.types";
 
-export function DashboardContent() {
-  const kpis = MOCK_DASHBOARD_KPIS;
+interface DashboardContentProps {
+  data: DashboardOverview | null;
+  errorMessage?: string | null;
+}
+
+export function DashboardContent({
+  data,
+  errorMessage = null,
+}: DashboardContentProps) {
+  if (errorMessage || !data) {
+    return (
+      <ErrorState
+        title="Unable to load dashboard"
+        message={errorMessage ?? "Dashboard data is unavailable."}
+      />
+    );
+  }
+
+  const { kpis, recentActivity } = data;
 
   return (
     <VStack align="stretch" gap="6">
@@ -52,7 +75,7 @@ export function DashboardContent() {
           value={kpis.fleetUtilization}
           suffix="%"
           icon={LuActivity}
-          description="Active vs total fleet"
+          description="On trip vs active fleet"
         />
       </Grid>
 
@@ -84,50 +107,73 @@ export function DashboardContent() {
         />
       </Grid>
 
-      <Card.Root variant="outline" bg="gray.900" borderColor="gray.700" borderRadius="lg">
+      <Card.Root
+        variant="outline"
+        bg="gray.900"
+        borderColor="gray.700"
+        borderRadius="lg"
+      >
         <Card.Header>
-          <Card.Title fontSize="md" color="gray.100">Operational Overview</Card.Title>
+          <Card.Title fontSize="md" color="gray.100">
+            Operational Overview
+          </Card.Title>
           <Card.Description color="gray.400">
             Recent fleet activity across trips, dispatch, and maintenance
           </Card.Description>
         </Card.Header>
         <Card.Body pt="0">
-          <VStack align="stretch" gap="0">
-            {MOCK_FLEET_ACTIVITY.map((item, index) => (
-              <HStack
-                key={item.id}
-                justify="space-between"
-                align={{ base: "flex-start", sm: "center" }}
-                direction={{ base: "column", sm: "row" }}
-                gap={{ base: "2", sm: "4" }}
-                py="3"
-                borderBottomWidth={
-                  index < MOCK_FLEET_ACTIVITY.length - 1 ? "1px" : undefined
-                }
-                borderColor="gray.800"
-              >
-                <VStack align="stretch" gap="0.5" flex="1" minW="0">
-                  <Text fontSize="sm" fontWeight="medium" color="gray.200" truncate>
-                    {item.description}
-                  </Text>
-                  <Text fontSize="xs" color="gray.500">
-                    {format(new Date(item.timestamp), "dd MMM yyyy, HH:mm")}
-                  </Text>
-                </VStack>
-                <StatusBadge status={item.status} />
-              </HStack>
-            ))}
-          </VStack>
+          {recentActivity.length === 0 ? (
+            <EmptyState
+              title="No recent activity"
+              description="Trip and maintenance updates will appear here as work happens."
+            />
+          ) : (
+            <VStack align="stretch" gap="0">
+              {recentActivity.map((item, index) => (
+                <HStack
+                  key={item.id}
+                  justify="space-between"
+                  align={{ base: "flex-start", sm: "center" }}
+                  direction={{ base: "column", sm: "row" }}
+                  gap={{ base: "2", sm: "4" }}
+                  py="3"
+                  borderBottomWidth={
+                    index < recentActivity.length - 1 ? "1px" : undefined
+                  }
+                  borderColor="gray.800"
+                >
+                  <VStack align="stretch" gap="0.5" flex="1" minW="0">
+                    <Text
+                      fontSize="sm"
+                      fontWeight="medium"
+                      color="gray.200"
+                      truncate
+                    >
+                      {item.description}
+                    </Text>
+                    <Text fontSize="xs" color="gray.500">
+                      {format(new Date(item.timestamp), "dd MMM yyyy, HH:mm")}
+                    </Text>
+                  </VStack>
+                  <StatusBadge status={item.status} />
+                </HStack>
+              ))}
+            </VStack>
+          )}
         </Card.Body>
       </Card.Root>
 
-      <Card.Root variant="outline" bg="gray.900" borderColor="gray.700" borderRadius="lg">
+      <Card.Root
+        variant="outline"
+        bg="gray.900"
+        borderColor="gray.700"
+        borderRadius="lg"
+      >
         <Card.Body>
           <Text fontSize="sm" color="gray.400">
             Fleet summary:{" "}
             <Text as="span" fontWeight="semibold" color="gray.100">
-              <FormatNumber value={kpis.activeVehicles + kpis.availableVehicles} />{" "}
-              total vehicles
+              <FormatNumber value={kpis.totalVehicles} /> total vehicles
             </Text>
             ,{" "}
             <Text as="span" fontWeight="semibold" color="gray.100">

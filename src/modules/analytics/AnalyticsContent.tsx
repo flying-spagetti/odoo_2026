@@ -19,14 +19,13 @@ import {
 } from "recharts";
 import { AccentKpiCard } from "@/components/shared/AccentKpiCard";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { LoadingState } from "@/components/shared/LoadingState";
-import { MOCK_ANALYTICS_OVERVIEW } from "@/lib/mock-data/analytics";
+import { ErrorState } from "@/components/shared/ErrorState";
 import { formatIndianCurrency } from "@/lib/utils/format";
 import type { AnalyticsOverview } from "@/types/analytics";
 
 interface AnalyticsContentProps {
-  data?: AnalyticsOverview;
-  isLoading?: boolean;
+  data: AnalyticsOverview | null;
+  errorMessage?: string | null;
 }
 
 const sectionTitleStyles = {
@@ -44,11 +43,16 @@ const vehicleBarColors: Record<string, string> = {
 };
 
 export function AnalyticsContent({
-  data = MOCK_ANALYTICS_OVERVIEW,
-  isLoading = false,
+  data,
+  errorMessage = null,
 }: AnalyticsContentProps) {
-  if (isLoading) {
-    return <LoadingState message="Loading analytics..." />;
+  if (errorMessage || !data) {
+    return (
+      <ErrorState
+        title="Unable to load analytics"
+        message={errorMessage ?? "Analytics data is unavailable."}
+      />
+    );
   }
 
   if (!data.kpis.length) {
@@ -94,83 +98,121 @@ export function AnalyticsContent({
         gap="4"
         alignItems="stretch"
       >
-        <Card.Root variant="outline" bg="gray.900" borderColor="gray.700">
+        <Card.Root
+          variant="outline"
+          bg="gray.900"
+          borderColor="gray.700"
+          borderRadius="lg"
+        >
           <Card.Body gap="4">
             <Text {...sectionTitleStyles}>Monthly Revenue</Text>
-            <Box h="240px" w="full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.monthlyRevenue} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid stroke="var(--chakra-colors-gray-800)" vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tick={{ fill: "var(--chakra-colors-gray-500)", fontSize: 12 }}
-                    axisLine={{ stroke: "var(--chakra-colors-gray-700)" }}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    tick={{ fill: "var(--chakra-colors-gray-500)", fontSize: 12 }}
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(value: number) =>
-                      `${Math.round(value / 1000)}k`
-                    }
-                  />
-                  <Tooltip
-                    cursor={{ fill: "var(--chakra-colors-gray-800)" }}
-                    contentStyle={{
-                      backgroundColor: "var(--chakra-colors-gray-900)",
-                      border: "1px solid var(--chakra-colors-gray-700)",
-                      borderRadius: "8px",
-                      color: "var(--chakra-colors-gray-100)",
-                    }}
-                    formatter={(value) => {
-                      const amount =
-                        typeof value === "number" ? value : Number(value ?? 0);
-                      return [formatIndianCurrency(amount), "Revenue"];
-                    }}
-                  />
-                  <Bar
-                    dataKey="revenue"
-                    fill="var(--chakra-colors-blue-400)"
-                    radius={[4, 4, 0, 0]}
-                    maxBarSize={48}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </Box>
+            {data.monthlyRevenue.every((point) => point.revenue === 0) ? (
+              <EmptyState
+                title="No completed trip revenue yet"
+                description="Revenue appears after trips are completed with recorded revenue."
+              />
+            ) : (
+              <Box h="240px" w="full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={data.monthlyRevenue}
+                    margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      stroke="var(--chakra-colors-gray-800)"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="month"
+                      tick={{
+                        fill: "var(--chakra-colors-gray-500)",
+                        fontSize: 12,
+                      }}
+                      axisLine={{ stroke: "var(--chakra-colors-gray-700)" }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{
+                        fill: "var(--chakra-colors-gray-500)",
+                        fontSize: 12,
+                      }}
+                      axisLine={false}
+                      tickLine={false}
+                      tickFormatter={(value: number) =>
+                        `${Math.round(value / 1000)}k`
+                      }
+                    />
+                    <Tooltip
+                      cursor={{ fill: "var(--chakra-colors-gray-800)" }}
+                      contentStyle={{
+                        backgroundColor: "var(--chakra-colors-gray-900)",
+                        border: "1px solid var(--chakra-colors-gray-700)",
+                        borderRadius: "8px",
+                        color: "var(--chakra-colors-gray-100)",
+                      }}
+                      formatter={(value) => {
+                        const amount =
+                          typeof value === "number"
+                            ? value
+                            : Number(value ?? 0);
+                        return [formatIndianCurrency(amount), "Revenue"];
+                      }}
+                    />
+                    <Bar
+                      dataKey="revenue"
+                      fill="var(--chakra-colors-blue-400)"
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={48}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Box>
+            )}
           </Card.Body>
         </Card.Root>
 
-        <Card.Root variant="outline" bg="gray.900" borderColor="gray.700">
+        <Card.Root
+          variant="outline"
+          bg="gray.900"
+          borderColor="gray.700"
+          borderRadius="lg"
+        >
           <Card.Body gap="4">
             <Text {...sectionTitleStyles}>Top Costliest Vehicles</Text>
-            <VStack align="stretch" gap="4" pt="2">
-              {data.costliestVehicles.map((vehicle) => (
-                <Box key={vehicle.vehicleName}>
-                  <Flex justify="space-between" mb="2" gap="3">
-                    <Text fontSize="sm" fontWeight="medium" color="gray.200">
-                      {vehicle.vehicleName}
-                    </Text>
-                    <Text fontSize="sm" color="gray.400">
-                      {formatIndianCurrency(vehicle.cost)}
-                    </Text>
-                  </Flex>
-                  <Box
-                    h="3"
-                    bg="gray.800"
-                    borderRadius="full"
-                    overflow="hidden"
-                  >
+            {data.costliestVehicles.length === 0 ? (
+              <EmptyState
+                title="No vehicle costs yet"
+                description="Fuel, maintenance, and expense totals will appear here."
+              />
+            ) : (
+              <VStack align="stretch" gap="4" pt="2">
+                {data.costliestVehicles.map((vehicle) => (
+                  <Box key={vehicle.vehicleName}>
+                    <Flex justify="space-between" mb="2" gap="3">
+                      <Text fontSize="sm" fontWeight="medium" color="gray.200">
+                        {vehicle.vehicleName}
+                      </Text>
+                      <Text fontSize="sm" color="gray.400">
+                        {formatIndianCurrency(vehicle.cost)}
+                      </Text>
+                    </Flex>
                     <Box
-                      h="full"
-                      bg={vehicleBarColors[vehicle.accentColor]}
+                      h="3"
+                      bg="gray.800"
                       borderRadius="full"
-                      width={`${(vehicle.cost / maxVehicleCost) * 100}%`}
-                    />
+                      overflow="hidden"
+                    >
+                      <Box
+                        h="full"
+                        bg={vehicleBarColors[vehicle.accentColor]}
+                        borderRadius="full"
+                        width={`${(vehicle.cost / maxVehicleCost) * 100}%`}
+                      />
+                    </Box>
                   </Box>
-                </Box>
-              ))}
-            </VStack>
+                ))}
+              </VStack>
+            )}
           </Card.Body>
         </Card.Root>
       </Grid>

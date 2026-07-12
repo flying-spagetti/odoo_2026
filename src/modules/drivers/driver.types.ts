@@ -47,5 +47,4 @@ export type CreateDriverInput = {
   licenseCategory: string;
   licenseExpiryDate: string;
   contactNumber: string;
-  safetyScore: number;
 };

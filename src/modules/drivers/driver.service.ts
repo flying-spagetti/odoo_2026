@@ -1,7 +1,7 @@
 import { DriverStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import { DriverDomainError } from "./driver.errors";
-import { toDriverListItem } from "./driver.mapper";
+import { computeSafetyScore, toDriverListItem } from "./driver.mapper";
 import type { CreateDriverInput, DriverListItem } from "./driver.types";
 
 export async function listDrivers(): Promise<DriverListItem[]> {
@@ -34,14 +34,21 @@ export async function createDriver(
     );
   }
 
+  const licenseExpiryDate = new Date(input.licenseExpiryDate);
+  const initialSafetyScore = computeSafetyScore({
+    status: DriverStatus.AVAILABLE,
+    licenseExpiryDate,
+    trips: [],
+  });
+
   const driver = await prisma.driver.create({
     data: {
       name: input.name.trim(),
       licenseNumber,
       licenseCategory: input.licenseCategory,
-      licenseExpiryDate: new Date(input.licenseExpiryDate),
+      licenseExpiryDate,
       contactNumber: input.contactNumber.trim(),
-      safetyScore: input.safetyScore,
+      safetyScore: initialSafetyScore,
       status: DriverStatus.AVAILABLE,
     },
     include: {

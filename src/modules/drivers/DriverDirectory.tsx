@@ -251,6 +251,9 @@ export function DriverDirectory({
                           <Text fontSize="xs" color="gray.400">
                             Score {driver.safetyScore}
                           </Text>
+                          <Text fontSize="xs" color="gray.500">
+                            Auto from trips &amp; licence
+                          </Text>
                         </VStack>
                       </Table.Cell>
                       <Table.Cell bg="gray.900">

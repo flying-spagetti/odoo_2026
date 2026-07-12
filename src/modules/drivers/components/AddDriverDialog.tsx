@@ -58,7 +58,6 @@ export function AddDriverDialog({
     useState<(typeof LICENSE_CATEGORIES)[number]>("HMV");
   const [licenseExpiryDate, setLicenseExpiryDate] = useState(defaultExpiryDate);
   const [contactNumber, setContactNumber] = useState("");
-  const [safetyScore, setSafetyScore] = useState("85");
   const [localFailure, setLocalFailure] = useState<DriverFailure | null>(null);
 
   const displayedFailure = localFailure ?? failure;
@@ -69,7 +68,6 @@ export function AddDriverDialog({
     setLicenseCategory("HMV");
     setLicenseExpiryDate(defaultExpiryDate());
     setContactNumber("");
-    setSafetyScore("85");
     setLocalFailure(null);
   };
 
@@ -89,8 +87,6 @@ export function AddDriverDialog({
     if (isSubmitting) {
       return;
     }
-
-    const parsedScore = Number(safetyScore);
 
     if (!name.trim()) {
       setLocalFailure({
@@ -124,18 +120,6 @@ export function AddDriverDialog({
       return;
     }
 
-    if (
-      !Number.isInteger(parsedScore) ||
-      parsedScore < 0 ||
-      parsedScore > 100
-    ) {
-      setLocalFailure({
-        code: "VALIDATION_ERROR",
-        message: "Safety score must be a whole number between 0 and 100.",
-      });
-      return;
-    }
-
     setLocalFailure(null);
 
     const succeeded = await onSubmit({
@@ -144,7 +128,6 @@ export function AddDriverDialog({
       licenseCategory,
       licenseExpiryDate: new Date(licenseExpiryDate).toISOString(),
       contactNumber: contactNumber.trim(),
-      safetyScore: parsedScore,
     });
 
     if (succeeded) {
@@ -172,8 +155,10 @@ export function AddDriverDialog({
               <form onSubmit={handleSubmit} id="add-driver-form">
                 <VStack align="stretch" gap="4">
                   <Text fontSize="sm" color="gray.400">
-                    New drivers are registered as Available. Expired licences
-                    and Suspended status block trip assignment.
+                    New drivers are registered as Available. Safety score is
+                    calculated automatically from licence status and trip
+                    history. Expired licences and Suspended status block trip
+                    assignment.
                   </Text>
 
                   <Field.Root required>
@@ -262,26 +247,6 @@ export function AddDriverDialog({
                         setLocalFailure(null);
                       }}
                       placeholder="+91 98765 43210"
-                      disabled={isSubmitting}
-                      {...inputStyles}
-                    />
-                  </Field.Root>
-
-                  <Field.Root required>
-                    <Field.Label fontSize="xs" color="gray.400">
-                      SAFETY SCORE (0–100)
-                    </Field.Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      max={100}
-                      step={1}
-                      value={safetyScore}
-                      onChange={(event) => {
-                        setSafetyScore(event.target.value);
-                        setLocalFailure(null);
-                      }}
-                      placeholder="85"
                       disabled={isSubmitting}
                       {...inputStyles}
                     />

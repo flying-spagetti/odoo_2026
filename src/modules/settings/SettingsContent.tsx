@@ -2,7 +2,6 @@
 
 import {
   Box,
-  Button,
   Card,
   Field,
   Grid,
@@ -12,27 +11,18 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { useState } from "react";
 import { LuCheck } from "react-icons/lu";
-import { LoadingState } from "@/components/shared/LoadingState";
-import { MOCK_SETTINGS } from "@/lib/mock-data/settings";
-import type {
-  GeneralSettings,
-  PermissionLevel,
-  RbacModule,
-  SettingsData,
-} from "@/types/settings";
+import type { PermissionLevel, RbacModule } from "@/types/settings";
 import {
   CURRENCY_OPTIONS,
   DISTANCE_UNIT_OPTIONS,
   RBAC_MODULES,
   RBAC_MODULE_LABELS,
 } from "@/types/settings";
-
-interface SettingsContentProps {
-  settings?: SettingsData;
-  isLoading?: boolean;
-}
+import {
+  APP_SETTINGS_DEFAULTS,
+  ROLE_PERMISSION_MATRIX,
+} from "./settings.data";
 
 const inputStyles = {
   bg: "gray.800",
@@ -87,31 +77,8 @@ function PermissionCell({ level }: { level: PermissionLevel }) {
   );
 }
 
-export function SettingsContent({
-  settings = MOCK_SETTINGS,
-  isLoading = false,
-}: SettingsContentProps) {
-  const [generalSettings, setGeneralSettings] = useState<GeneralSettings>(
-    settings.general,
-  );
-  const [isSaving, setIsSaving] = useState(false);
-
-  const handleGeneralChange = <K extends keyof GeneralSettings>(
-    field: K,
-    value: GeneralSettings[K],
-  ) => {
-    setGeneralSettings((current) => ({ ...current, [field]: value }));
-  };
-
-  const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSaving(true);
-    setIsSaving(false);
-  };
-
-  if (isLoading) {
-    return <LoadingState message="Loading settings..." />;
-  }
+export function SettingsContent() {
+  const general = APP_SETTINGS_DEFAULTS;
 
   return (
     <Grid
@@ -119,96 +86,96 @@ export function SettingsContent({
       gap={{ base: "6", xl: "8" }}
       alignItems="start"
     >
-      <Card.Root variant="outline" bg="gray.900" borderColor="gray.700" borderRadius="lg">
+      <Card.Root
+        variant="outline"
+        bg="gray.900"
+        borderColor="gray.700"
+        borderRadius="lg"
+      >
         <Card.Body gap="5">
           <Text {...sectionTitleStyles}>General</Text>
+          <Text fontSize="sm" color="gray.500">
+            Organization defaults are display-only. Role permissions below
+            reflect the live access rules enforced by the server.
+          </Text>
 
-          <form onSubmit={handleSave}>
-            <VStack align="stretch" gap="4">
-              <Field.Root required>
-                <Field.Label {...labelStyles}>DEPOT NAME</Field.Label>
-                <Input
-                  value={generalSettings.depotName}
-                  onChange={(event) =>
-                    handleGeneralChange("depotName", event.target.value)
-                  }
+          <VStack align="stretch" gap="4">
+            <Field.Root>
+              <Field.Label {...labelStyles}>DEPOT NAME</Field.Label>
+              <Input value={general.depotName} readOnly {...inputStyles} />
+            </Field.Root>
+
+            <Field.Root>
+              <Field.Label {...labelStyles}>CURRENCY</Field.Label>
+              <NativeSelect.Root disabled>
+                <NativeSelect.Field
+                  value={general.currency}
+                  aria-label="Currency"
                   {...inputStyles}
-                />
-              </Field.Root>
+                >
+                  {CURRENCY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </NativeSelect.Field>
+                <NativeSelect.Indicator color="gray.400" />
+              </NativeSelect.Root>
+            </Field.Root>
 
-              <Field.Root required>
-                <Field.Label {...labelStyles}>CURRENCY</Field.Label>
-                <NativeSelect.Root>
-                  <NativeSelect.Field
-                    value={generalSettings.currency}
-                    onChange={(event) =>
-                      handleGeneralChange("currency", event.target.value)
-                    }
-                    aria-label="Select currency"
-                    {...inputStyles}
-                  >
-                    {CURRENCY_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </NativeSelect.Field>
-                  <NativeSelect.Indicator color="gray.400" />
-                </NativeSelect.Root>
-              </Field.Root>
-
-              <Field.Root required>
-                <Field.Label {...labelStyles}>DISTANCE UNIT</Field.Label>
-                <NativeSelect.Root>
-                  <NativeSelect.Field
-                    value={generalSettings.distanceUnit}
-                    onChange={(event) =>
-                      handleGeneralChange("distanceUnit", event.target.value)
-                    }
-                    aria-label="Select distance unit"
-                    {...inputStyles}
-                  >
-                    {DISTANCE_UNIT_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </NativeSelect.Field>
-                  <NativeSelect.Indicator color="gray.400" />
-                </NativeSelect.Root>
-              </Field.Root>
-
-              <Button
-                type="submit"
-                colorPalette="blue"
-                loading={isSaving}
-                alignSelf="flex-start"
-                mt="2"
-              >
-                Save changes
-              </Button>
-            </VStack>
-          </form>
+            <Field.Root>
+              <Field.Label {...labelStyles}>DISTANCE UNIT</Field.Label>
+              <NativeSelect.Root disabled>
+                <NativeSelect.Field
+                  value={general.distanceUnit}
+                  aria-label="Distance unit"
+                  {...inputStyles}
+                >
+                  {DISTANCE_UNIT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </NativeSelect.Field>
+                <NativeSelect.Indicator color="gray.400" />
+              </NativeSelect.Root>
+            </Field.Root>
+          </VStack>
         </Card.Body>
       </Card.Root>
 
-      <Card.Root variant="outline" bg="gray.900" borderColor="gray.700" overflow="hidden" borderRadius="lg">
+      <Card.Root
+        variant="outline"
+        bg="gray.900"
+        borderColor="gray.700"
+        overflow="hidden"
+        borderRadius="lg"
+      >
         <Card.Body gap="4" p="0">
           <Box px="5" pt="5">
             <Text {...sectionTitleStyles}>Role-Based Access (RBAC)</Text>
+            <Text fontSize="sm" color="gray.500" mt="2">
+              Full = create/update actions · view = read access · — = no module
+              access beyond shared navigation
+            </Text>
           </Box>
 
           <Table.ScrollArea bg="gray.900">
             <Table.Root size="sm" variant="line" bg="gray.900" color="gray.100">
               <Table.Header>
                 <Table.Row bg="gray.900" borderColor="gray.700">
-                  <Table.ColumnHeader {...headerCellStyles}>ROLE</Table.ColumnHeader>
+                  <Table.ColumnHeader {...headerCellStyles}>
+                    ROLE
+                  </Table.ColumnHeader>
                   {RBAC_MODULES.map((module) => (
                     <Table.ColumnHeader
                       key={module}
                       {...headerCellStyles}
                       display={{
-                        base: module === "fleet" || module === "trips" ? "table-cell" : "none",
+                        base:
+                          module === "fleet" || module === "trips"
+                            ? "table-cell"
+                            : "none",
                         md: module === "analytics" ? "none" : "table-cell",
                         lg: "table-cell",
                       }}
@@ -219,8 +186,12 @@ export function SettingsContent({
                 </Table.Row>
               </Table.Header>
               <Table.Body>
-                {settings.rolePermissions.map((row) => (
-                  <Table.Row key={row.roleLabel} bg="gray.900" borderColor="gray.800">
+                {ROLE_PERMISSION_MATRIX.map((row) => (
+                  <Table.Row
+                    key={row.roleLabel}
+                    bg="gray.900"
+                    borderColor="gray.800"
+                  >
                     <Table.Cell bg="gray.900">
                       <Text fontSize="sm" fontWeight="semibold" color="white">
                         {row.roleLabel}
@@ -231,7 +202,10 @@ export function SettingsContent({
                         key={module}
                         bg="gray.900"
                         display={{
-                          base: module === "fleet" || module === "trips" ? "table-cell" : "none",
+                          base:
+                            module === "fleet" || module === "trips"
+                              ? "table-cell"
+                              : "none",
                           md: module === "analytics" ? "none" : "table-cell",
                           lg: "table-cell",
                         }}
