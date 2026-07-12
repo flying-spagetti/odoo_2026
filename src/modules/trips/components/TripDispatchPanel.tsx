@@ -6,24 +6,32 @@ import {
   Field,
   Flex,
   Input,
+  Separator,
   Text,
   VStack,
 } from "@chakra-ui/react";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import type { DispatchReadiness, TripDetailView, TripFailure } from "../trip.types";
-import { DispatchFailureAlert } from "./DispatchFailureAlert";
+import { CompleteTripForm } from "./CompleteTripForm";
 import { DispatchReadinessPanel } from "./DispatchReadinessPanel";
+import { TripFailureAlert } from "./TripFailureAlert";
 import { TripLifecycleStrip } from "./TripLifecycleStrip";
 
 interface TripDispatchPanelProps {
   trip: TripDetailView | null;
   readiness: DispatchReadiness | null;
   dispatchFailure: TripFailure | null;
+  completeFailure: TripFailure | null;
+  cancelFailure: TripFailure | null;
   isLoading: boolean;
   isReadinessLoading: boolean;
+  isMutating: boolean;
   isDispatching: boolean;
-  canDispatch: boolean;
+  isCompleting: boolean;
+  canMutate: boolean;
   onDispatch: () => void;
+  onComplete: (finalOdometerKm: number) => void;
+  onCancelRequest: () => void;
 }
 
 function ReadOnlyField({
@@ -54,11 +62,17 @@ export function TripDispatchPanel({
   trip,
   readiness,
   dispatchFailure,
+  completeFailure,
+  cancelFailure,
   isLoading,
   isReadinessLoading,
+  isMutating,
   isDispatching,
-  canDispatch,
+  isCompleting,
+  canMutate,
   onDispatch,
+  onComplete,
+  onCancelRequest,
 }: TripDispatchPanelProps) {
   if (isLoading) {
     return (
@@ -93,8 +107,15 @@ export function TripDispatchPanel({
   }
 
   const isDraft = trip.status === "DRAFT";
+  const isDispatched = trip.status === "DISPATCHED";
+  const isTerminal = trip.status === "COMPLETED" || trip.status === "CANCELLED";
+  const canCancel = (isDraft || isDispatched) && canMutate && !isMutating;
   const dispatchEnabled =
-    isDraft && canDispatch && readiness?.ready === true && !isDispatching;
+    isDraft &&
+    canMutate &&
+    readiness?.ready === true &&
+    !isMutating &&
+    !isDispatching;
 
   return (
     <Box
@@ -102,7 +123,7 @@ export function TripDispatchPanel({
       borderColor="gray.700"
       borderRadius="md"
       bg="gray.900"
-      p="5"
+      p={{ base: "4", md: "5" }}
     >
       <VStack align="stretch" gap="5">
         <Box>
@@ -162,28 +183,29 @@ export function TripDispatchPanel({
             Resource status
           </Text>
           <VStack align="stretch" gap="2">
-            <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Flex justify="space-between" align="center" gap="3" wrap="wrap">
               <Text fontSize="sm" color="gray.300">
                 {trip.vehicle.name}
               </Text>
               <StatusBadge status={trip.vehicle.status} />
-            </Box>
-            <Box display="flex" justifyContent="space-between" alignItems="center">
+            </Flex>
+            <Flex justify="space-between" align="center" gap="3" wrap="wrap">
               <Text fontSize="sm" color="gray.300">
                 {trip.driver.name}
               </Text>
               <StatusBadge status={trip.driver.status} />
-            </Box>
+            </Flex>
           </VStack>
         </Box>
 
         {isDraft && (
           <>
+            <Separator borderColor="gray.700" />
             <DispatchReadinessPanel
               readiness={readiness}
               isLoading={isReadinessLoading}
             />
-            <DispatchFailureAlert failure={dispatchFailure} />
+            <TripFailureAlert failure={dispatchFailure} title="Dispatch blocked" />
             <Button
               colorPalette="blue"
               size="lg"
@@ -194,15 +216,24 @@ export function TripDispatchPanel({
             >
               {dispatchEnabled ? "Dispatch" : "Dispatch (blocked)"}
             </Button>
-            {!canDispatch && (
-              <Text fontSize="xs" color="gray.500" textAlign="center">
-                Dispatch requires Fleet Manager or Dispatcher role.
-              </Text>
-            )}
           </>
         )}
 
-        {!isDraft && (
+        {isDispatched && (
+          <>
+            <Separator borderColor="gray.700" />
+            <CompleteTripForm
+              key={trip.id}
+              trip={trip}
+              canMutate={canMutate}
+              isCompleting={isCompleting}
+              completeFailure={completeFailure}
+              onComplete={onComplete}
+            />
+          </>
+        )}
+
+        {isTerminal && (
           <Box
             borderWidth="1px"
             borderColor="gray.700"
@@ -212,11 +243,33 @@ export function TripDispatchPanel({
           >
             <Flex align="center" gap="2" wrap="wrap">
               <Text fontSize="sm" color="gray.400">
-                Only draft trips can be dispatched. This trip is currently
+                This trip is closed with status
               </Text>
               <StatusBadge status={trip.status} />
             </Flex>
           </Box>
+        )}
+
+        {(isDraft || isDispatched) && (
+          <>
+            <Separator borderColor="gray.700" />
+            <TripFailureAlert failure={cancelFailure} title="Cancellation failed" />
+            <Button
+              variant="outline"
+              colorPalette="red"
+              size="md"
+              w="full"
+              disabled={!canCancel}
+              onClick={onCancelRequest}
+            >
+              Cancel trip
+            </Button>
+            {!canMutate && (
+              <Text fontSize="xs" color="gray.500" textAlign="center">
+                Cancelling trips requires Fleet Manager or Dispatcher role.
+              </Text>
+            )}
+          </>
         )}
       </VStack>
     </Box>

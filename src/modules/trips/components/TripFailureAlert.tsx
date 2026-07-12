@@ -2,18 +2,30 @@
 
 import { Alert, Box, Text, VStack } from "@chakra-ui/react";
 import { LuCircleX } from "react-icons/lu";
-import type { TripFailure } from "../trip.types";
+import type { TripFailure, TripFailureCode } from "../trip.types";
 
-interface DispatchFailureAlertProps {
+const FAILURE_TITLES: Partial<Record<TripFailureCode, string>> = {
+  DISPATCH_BLOCKED: "Dispatch blocked",
+  INVALID_ODOMETER: "Invalid odometer reading",
+  INVALID_TRIP_STATE: "Action not allowed",
+  VALIDATION_ERROR: "Validation failed",
+  UNAUTHORIZED: "Authentication required",
+  FORBIDDEN: "Permission denied",
+};
+
+interface TripFailureAlertProps {
   failure: TripFailure | null;
+  title?: string;
 }
 
-export function DispatchFailureAlert({ failure }: DispatchFailureAlertProps) {
+export function TripFailureAlert({ failure, title }: TripFailureAlertProps) {
   if (!failure) {
     return null;
   }
 
   const readiness = failure.details?.readiness;
+  const alertTitle =
+    title ?? FAILURE_TITLES[failure.code] ?? "Action failed";
 
   return (
     <Alert.Root
@@ -27,7 +39,7 @@ export function DispatchFailureAlert({ failure }: DispatchFailureAlertProps) {
         <LuCircleX />
       </Alert.Indicator>
       <Box flex="1">
-        <Alert.Title fontSize="sm">Dispatch blocked</Alert.Title>
+        <Alert.Title fontSize="sm">{alertTitle}</Alert.Title>
         <Alert.Description fontSize="sm" mt="1">
           {failure.message}
         </Alert.Description>

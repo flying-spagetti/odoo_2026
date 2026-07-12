@@ -97,6 +97,7 @@ export function toTripDetailView(trip: TripWithRelations): TripDetailView {
     vehicle: {
       ...toVehicleSummary(trip.vehicle),
       maxLoadKg: trip.vehicle.maxLoadKg,
+      odometerKm: trip.vehicle.odometerKm,
     },
     driver: {
       ...toDriverSummary(trip.driver),

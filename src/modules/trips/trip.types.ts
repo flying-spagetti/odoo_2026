@@ -104,7 +104,7 @@ export type TripDetailView = {
   status: TripStatus;
   cargoWeightKg: number;
   plannedDistanceKm: number;
-  vehicle: TripResourceSummary & { maxLoadKg: number };
+  vehicle: TripResourceSummary & { maxLoadKg: number; odometerKm: number };
   driver: TripResourceSummary & { licenseExpiryDate: string };
   dispatchedAt: string | null;
   completedAt: string | null;
