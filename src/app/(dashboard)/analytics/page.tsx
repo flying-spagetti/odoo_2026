@@ -1,17 +1,10 @@
-"use client";
-
-import { PageContainer } from "@/components/layout/PageContainer";
-import { PlaceholderPage } from "@/modules/shared/PlaceholderPage";
-import { LuChartPie } from "react-icons/lu";
+import { Box } from "@chakra-ui/react";
+import { AnalyticsContent } from "@/modules/analytics/AnalyticsContent";
 
 export default function AnalyticsPage() {
   return (
-    <PageContainer>
-      <PlaceholderPage
-        icon={LuChartPie}
-        title="Analytics coming soon"
-        description="Fleet analytics and reporting will be available in a future release."
-      />
-    </PageContainer>
+    <Box px={{ base: "4", md: "6" }} py={{ base: "5", md: "6" }}>
+      <AnalyticsContent />
+    </Box>
   );
 }
